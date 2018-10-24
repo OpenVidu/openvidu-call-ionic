@@ -1,0 +1,22 @@
+<ion-content padding id="dashboard-content">
+
+  <div id="card">
+      <img class="demo-logo" src="assets/images/openvidu_white_bg_transp.png" />
+
+    <div id="form">
+        <ion-item align="center">
+            <ion-label position="floating" color="light">Insert your session name</ion-label>
+            <ion-input [(ngModel)]="mySessionId" color="light" (keyup.enter)="join()"></ion-input>
+          </ion-item>
+          
+          <ion-button id="join-button" (click)="join()" expand="block" shape="round"
+            color="primary">
+            <ion-icon slot="start" name="videocam"></ion-icon>
+            Join
+          </ion-button>
+
+    </div>
+    
+
+  </div>
+</ion-content>

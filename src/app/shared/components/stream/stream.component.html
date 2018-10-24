@@ -1,0 +1,14 @@
+
+<div class="OT_widget-container" *ngIf="user && user.getStreamManager()" [id]="'container-' + this.user.getStreamManager().stream.streamId">
+    <ov-video [streamManager]="user.getStreamManager()" [mutedSound]="mutedSound"></ov-video>
+    <div id="statusIcons">
+            <ion-badge color="danger" *ngIf="!user.getStreamManager().stream.audioActive">
+                    <ion-icon name="mic-off" color="light"></ion-icon>
+            </ion-badge>
+            <ion-badge color="danger" *ngIf="!user.getStreamManager().stream.videoActive">
+                    <ion-icon name="eye-off" color="light"></ion-icon>
+            </ion-badge>
+            
+    </div>
+</div>
+

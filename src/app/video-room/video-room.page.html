@@ -1,0 +1,53 @@
+<ion-header>
+  <ion-toolbar color="dark">
+    <div slot="start">
+      <img class="demo-logo" src="assets/images/openvidu_vert_white_bg_trans_cropped.png" />
+    </div>
+    <ion-title>Session: {{mySessionId}}</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content id="video-room-content">
+
+  <div id="layout" class="bounds">
+    <!-- Main video -->
+    <div *ngIf="localUser && localUser.getStreamManager()" #mainStream  class="OT_root OT_publisher OT_main custom-class" id="localUser">
+      <stream-component [user]="localUser"  (click)="toggleButtonsOrEnlargeStream($event)"   ></stream-component>
+    </div>
+    <!-- Remoters -->
+    <div *ngFor="let user of this.remoteUsers" class="OT_root OT_publisher OT_remote custom-class" id="remoteUsers">
+      <stream-component [user]="user"  (click)="toggleButtonsOrEnlargeStream($event)" ></stream-component>
+    </div>
+
+  </div>
+
+  <ion-fab *ngIf="localUser &&  localUser.getStreamManager()" vertical="top" horizontal="end" slot="fixed" id="rightButtons">
+    <ion-fab-button [@slideLeftRight]="buttonsVisibility" mini [color]="cameraBtnColor" id="camButton" (click)="toggleCamera()">
+      <ion-icon name="reverse-camera"></ion-icon>
+    </ion-fab-button>
+
+    <ion-fab-button [@slideLeftRight]="buttonsVisibility" mini [color]="camBtnColor" (click)="camStatusChanged()">
+      <ion-icon name="{{camBtnIcon}}"></ion-icon>
+    </ion-fab-button>
+
+    <ion-fab-button [@slideLeftRight]="buttonsVisibility" mini [color]="micBtnColor" (click)="micStatusChanged()">
+      <ion-icon name="{{micBtnIcon}}"></ion-icon>
+    </ion-fab-button>
+
+    <ion-fab-button [@slideLeftRight]="buttonsVisibility" mini color="light" (click)="resetVideoSize()">
+      <ion-icon name="apps"></ion-icon>
+    </ion-fab-button>
+
+    <ion-fab-button [@slideLeftRightChat]="chatNotification" mini [color]="chatBtnColor"
+    (click)="toggleChat()">
+      <ion-icon name="chatbubbles"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+  <ion-fab vertical="bottom" horizontal="center" id="exitButton" [@slideTopBottom]="buttonsVisibility">
+    <ion-fab-button color="danger" (click)="exitSession()">
+      <ion-icon name="call"></ion-icon>
+    </ion-fab-button>
+  </ion-fab>
+
+</ion-content>

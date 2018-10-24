@@ -1,0 +1,52 @@
+
+
+/*ion-toolbar {
+    --background: transparent;
+    --ion-color-base: transparent !important;
+}*/
+
+.demo-logo{
+    max-width: calc(100% - 20px);
+}
+
+
+#dashboard-content {
+    --background: none;
+    background-image: url('/assets/images/dashboard-bg.jpg') !important;
+    background-size: cover;
+    color: #ffffff;
+    text-align: center;
+}
+
+
+.item-has-focus .label-floating.sc-ion-label-md-h{
+    color: #b7ffc9;
+}
+
+#card{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: auto 25px;
+    text-align: center;
+
+    height: 80%;
+}
+
+#form{
+    padding: 20px;
+    background-color: #00000096;
+    border: 1px;
+    border-radius: 12px;
+
+
+}
+
+#join-button{
+    margin-top: 10px;
+}
+
+
+
