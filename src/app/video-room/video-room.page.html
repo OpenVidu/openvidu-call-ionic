@@ -12,11 +12,11 @@
   <div id="layout" class="bounds">
     <!-- Main video -->
     <div *ngIf="localUser && localUser.getStreamManager()" #mainStream  class="OT_root OT_publisher OT_main custom-class" id="localUser">
-      <stream-component [user]="localUser"  (click)="toggleButtonsOrEnlargeStream($event)"   ></stream-component>
+      <stream-component [user]="localUser" (click)="toggleButtonsOrEnlargeStream($event)"></stream-component>
     </div>
     <!-- Remoters -->
     <div *ngFor="let user of this.remoteUsers" class="OT_root OT_publisher OT_remote custom-class" id="remoteUsers">
-      <stream-component [user]="user"  (click)="toggleButtonsOrEnlargeStream($event)" ></stream-component>
+      <stream-component [user]="user" (click)="toggleButtonsOrEnlargeStream($event)"></stream-component>
     </div>
 
   </div>
