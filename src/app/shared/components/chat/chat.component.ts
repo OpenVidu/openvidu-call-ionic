@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, AfterViewInit, ViewChild, ElementRef, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { UserModel } from '../../models/user-model';
 import { ModalController } from '@ionic/angular';
 
@@ -8,8 +8,6 @@ import { ModalController } from '@ionic/angular';
     styleUrls: ['./chat.component.scss'],
 })
 export class ChatComponent implements OnInit {
-    @ViewChild('chatScroll')
-    chatScroll: ElementRef;
 
     @Input()
     user: UserModel;
@@ -25,7 +23,7 @@ export class ChatComponent implements OnInit {
 
     constructor(public modalController: ModalController) {}
 
-    ngOnInit() { }
+    ngOnInit() {}
 
     eventKeyPress(event) {
         if (event && event.keyCode === 13) {
@@ -42,6 +40,7 @@ export class ChatComponent implements OnInit {
                     data: JSON.stringify(data),
                     type: 'chat',
                 });
+                this.scrollToBottom();
                 this.message = '';
             }
         }
@@ -50,8 +49,11 @@ export class ChatComponent implements OnInit {
     scrollToBottom(): void {
         setTimeout(() => {
             try {
-                this.chatScroll.nativeElement.scrollTop = this.chatScroll.nativeElement.scrollHeight;
-            } catch (err) {}
+                const contentMessage = document.getElementById('message-wrap');
+                contentMessage.scrollTop = contentMessage.scrollHeight;
+            } catch (err) {
+                console.error(err);
+            }
         }, 20);
     }
 

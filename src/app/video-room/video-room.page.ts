@@ -244,6 +244,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             componentProps: { user: this.localUser, messageList: this.messageList },
         });
 
+
         modal.onWillDismiss().then(() => {
             this.modalIsPresented = false;
             this.toggleButtons();
@@ -343,6 +344,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
                 message: data.message,
                 userAvatar: messageOwner.getAvatar(),
             });
+            ChatComponent.prototype.scrollToBottom();
 
             if (!this.modalIsPresented) {
                 this.chatBtnColor = 'secondary';
