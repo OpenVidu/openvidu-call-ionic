@@ -21,24 +21,25 @@
 
   </div>
 
+
   <ion-fab *ngIf="localUser &&  localUser.getStreamManager()" vertical="top" horizontal="end" slot="fixed" id="rightButtons">
-    <ion-fab-button [@slideLeftRight]="buttonsVisibility" mini [color]="cameraBtnColor" id="camButton" (click)="toggleCamera()">
+    <ion-fab-button [@slideLeftRight]="buttonsVisibility" size="small" [color]="cameraBtnColor" id="camButton" (click)="toggleCamera()">
       <ion-icon name="reverse-camera"></ion-icon>
     </ion-fab-button>
 
-    <ion-fab-button [@slideLeftRight]="buttonsVisibility" mini [color]="camBtnColor" (click)="camStatusChanged()">
+    <ion-fab-button [@slideLeftRight]="buttonsVisibility" size="small" [color]="camBtnColor" (click)="camStatusChanged()">
       <ion-icon name="{{camBtnIcon}}"></ion-icon>
     </ion-fab-button>
 
-    <ion-fab-button [@slideLeftRight]="buttonsVisibility" mini [color]="micBtnColor" (click)="micStatusChanged()">
+    <ion-fab-button [@slideLeftRight]="buttonsVisibility" size="small" [color]="micBtnColor" (click)="micStatusChanged()">
       <ion-icon name="{{micBtnIcon}}"></ion-icon>
     </ion-fab-button>
 
-    <ion-fab-button [@slideLeftRight]="buttonsVisibility" mini color="light" (click)="resetVideoSize()">
+    <ion-fab-button [@slideLeftRight]="buttonsVisibility" size="small" color="light" (click)="resetVideoSize()">
       <ion-icon name="apps"></ion-icon>
     </ion-fab-button>
 
-    <ion-fab-button [@slideLeftRightChat]="chatNotification" mini [color]="chatBtnColor"
+    <ion-fab-button [@slideLeftRightChat]="chatNotification" size="small" [color]="chatBtnColor"
     (click)="toggleChat()">
       <ion-icon name="chatbubbles"></ion-icon>
     </ion-fab-button>
