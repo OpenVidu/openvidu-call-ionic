@@ -156,6 +156,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     joinToSession() {
         this.OV = new OpenVidu();
         this.session = this.OV.initSession();
+        this.subscribeToUserChanged();
         this.subscribeToStreamCreated();
         this.subscribedToStreamDestroyed();
         this.subscribedToChat();
@@ -295,6 +296,20 @@ export class VideoRoomPage implements OnInit, OnDestroy {
         }
     }
 
+
+    private subscribeToUserChanged() {
+        this.session.on('signal:userChanged', (event: any) => {
+          const data = JSON.parse(event.data);
+          this.remoteUsers.forEach((user: UserModel) => {
+            if (user.getConnectionId() === event.from.connectionId) {
+              if (data.avatar !== undefined) {
+                user.setUserAvatar(data.avatar);
+              }
+            }
+          });
+        });
+      }
+
     private subscribeToStreamCreated() {
         this.session.on('streamCreated', (event: StreamEvent) => {
             const subscriber = this.session.subscribe(event.stream, undefined);
@@ -312,9 +327,11 @@ export class VideoRoomPage implements OnInit, OnDestroy {
                 newUser.setNickname(nickname);
             }
             newUser.setType('remote');
-            console.log('----------- taking photo from remote User -----------');
-            newUser.setUserAvatar();
-            this.remoteUsers.push(newUser);
+            this.openViduSrv.getRandomAvatar().then((avatar) => {
+                newUser.setUserAvatar(avatar);
+                this.remoteUsers.push(newUser);
+                this.sendSignalUserAvatar(this.localUser);
+            });
             this.buttonsVisibility = 'out';
             this.chatNotification = 'out';
         });
@@ -335,12 +352,12 @@ export class VideoRoomPage implements OnInit, OnDestroy {
         this.session.on('signal:chat', (event: any) => {
             const data = JSON.parse(event.data);
             const messageOwner =
-                this.localUser.getNickname() === data.nickname
+                this.localUser.getConnectionId() === data.connectionId
                     ? this.localUser
-                    : this.remoteUsers.filter((user) => user.getNickname() === data.nickname)[0];
+                    : this.remoteUsers.filter((user) => user.getConnectionId() === data.connectionId)[0];
 
             this.messageList.push({
-                connectionId: event.from.connectionId,
+                connectionId: data.connectionId,
                 message: data.message,
                 userAvatar: messageOwner.getAvatar(),
             });
@@ -353,6 +370,17 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             }
         });
     }
+
+    private sendSignalUserAvatar(user: UserModel): void {
+        const data = {
+          avatar: user.getAvatar(),
+        };
+        const signalOptions: SignalOptions = {
+          data: JSON.stringify(data),
+          type: 'userChanged',
+        };
+        this.session.signal(signalOptions);
+      }
 
     private connectToSession(): void {
         this.openViduSrv
@@ -466,8 +494,10 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             this.session
                 .publish(<Publisher>this.localUser.getStreamManager())
                 .then(() => {
-                    console.log('----------- taking photo from Local User -----------');
-                    this.localUser.setUserAvatar();
+                    this.openViduSrv.getRandomAvatar().then((avatar) => {
+                        this.localUser.setUserAvatar(avatar);
+                        this.sendSignalUserAvatar(this.localUser);
+                    });
                 })
                 .catch((err) => {
                     console.error(err);

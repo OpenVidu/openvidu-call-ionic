@@ -6,7 +6,7 @@ export class UserModel {
     private streamManager: StreamManager;
     private type: 'local' | 'remote';
     private actualDeviceId: string;
-    private avatar: HTMLCanvasElement;
+    private avatar: string;
 
     constructor() {
         this.connectionId = '';
@@ -14,7 +14,6 @@ export class UserModel {
         this.streamManager = null;
         this.type = 'local';
         this.actualDeviceId = '';
-        this.createAvatar();
     }
 
     /* Getters */
@@ -43,7 +42,7 @@ export class UserModel {
     }
 
     public getAvatar(): string {
-        return this.avatar.toDataURL();
+        return this.avatar;
     }
 
     /* Setters */
@@ -66,21 +65,7 @@ export class UserModel {
         this.actualDeviceId = deviceId;
     }
 
-    public setUserAvatar(): Promise<any> {
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                const video = <HTMLVideoElement>document.getElementById('video-' + this.getStreamManager().stream.streamId);
-                const avatar = this.avatar.getContext('2d');
-                avatar.drawImage(video, 0, 0, 480, 480, 0, 0, 60, 60);
-                console.log('Photo was taken: ', this.avatar);
-                resolve();
-            }, 3000);
-        });
-    }
-    private createAvatar() {
-        this.avatar = document.createElement('canvas');
-        this.avatar.className = 'user-img';
-        this.avatar.width = 60;
-        this.avatar.height = 60;
+    public setUserAvatar(avatar: string): void {
+        this.avatar = avatar;
     }
 }

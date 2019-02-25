@@ -8,7 +8,6 @@ import { ModalController } from '@ionic/angular';
     styleUrls: ['./chat.component.scss'],
 })
 export class ChatComponent implements OnInit {
-
     @Input()
     user: UserModel;
 
@@ -35,7 +34,11 @@ export class ChatComponent implements OnInit {
         if (this.user && this.message) {
             this.message = this.message.replace(/ +(?= )/g, '');
             if (this.message !== '' && this.message !== ' ') {
-                const data = { message: this.message, nickname: this.user.getNickname() };
+                const data = {
+                    connectionId: this.user.getConnectionId(),
+                    message: this.message,
+                    nickname: this.user.getNickname(),
+                };
                 this.user.getStreamManager().stream.session.signal({
                     data: JSON.stringify(data),
                     type: 'chat',
