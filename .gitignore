@@ -23,6 +23,7 @@ www/
 node_modules/
 tmp/
 temp/
+platforms/
 platforms/android/.gradle
 platforms/android/app/build
 platforms/android/CordovaLib
