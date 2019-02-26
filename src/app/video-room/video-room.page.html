@@ -7,18 +7,17 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content id="video-room-content">
+<ion-content id="video-room-content" [scrollY]="false" [scrollX]="false">
 
   <div id="layout" class="bounds">
     <!-- Main video -->
-    <div *ngIf="localUser && localUser.getStreamManager()" #mainStream  class="OT_root OT_publisher OT_main custom-class" id="localUser">
-      <stream-component [user]="localUser" (click)="toggleButtonsOrEnlargeStream($event)"></stream-component>
+    <div *ngIf="localUser && localUser.getStreamManager()" #mainStream  class="OT_root OT_publisher OT_main custom-class" id="localUser" (click)="toggleButtonsOrEnlargeStream($event)">
+      <stream-component #streamComponentLocal [user]="localUser"></stream-component>
     </div>
-    <!-- Remoters -->
-    <div *ngFor="let user of this.remoteUsers" class="OT_root OT_publisher OT_remote custom-class" id="remoteUsers">
-      <stream-component [user]="user" (click)="toggleButtonsOrEnlargeStream($event)"></stream-component>
+    <!-- Remotes -->
+    <div *ngFor="let user of this.remoteUsers" class="OT_root OT_publisher OT_remote custom-class" id="remoteUsers" (click)="toggleButtonsOrEnlargeStream($event)">
+      <stream-component #streamComponentRemotes [user]="user" ></stream-component>
     </div>
-
   </div>
 
   <ion-fab *ngIf="localUser &&  localUser.getStreamManager()" vertical="top" horizontal="end" slot="fixed" id="rightButtons">
