@@ -1,5 +1,6 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ViewChild } from '@angular/core';
 import { UserModel } from '../../models/user-model';
+import { OpenViduVideoComponent } from './ov-video.component';
 
 @Component({
     selector: 'stream-component',
@@ -9,6 +10,8 @@ import { UserModel } from '../../models/user-model';
 export class StreamComponent implements OnInit {
     @Input()
     user: UserModel;
+
+    @ViewChild('videoComponent') videoComponent: OpenViduVideoComponent;
 
     mutedSound: boolean;
 

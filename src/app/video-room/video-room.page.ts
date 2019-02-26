@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, HostListener, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input, HostListener, ViewChild, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import { Platform, ModalController, AlertController } from '@ionic/angular';
 
 import { Router, ActivatedRoute, Params } from '@angular/router';
@@ -12,6 +12,9 @@ import { trigger, keyframes, state, style, transition, animate } from '@angular/
 import { ChatComponent } from '../shared/components/chat/chat.component';
 
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
+import { StreamComponent } from '../shared/components/stream/stream.component';
+
+declare var cordova;
 
 @Component({
     selector: 'app-video-room',
@@ -23,17 +26,18 @@ import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
                 'in',
                 style({
                     transform: 'translateX(0px)',
+                    // display: 'block !important'
                 }),
             ),
             state(
                 'out',
                 style({
                     transform: 'translateX(100px)',
-                    display: 'none',
+                    //display: 'none',
                 }),
             ),
-            transition('in => out', animate('200ms', keyframes([style({ transform: 'translateX(100px)' })]))),
-            transition('out => in', animate('200ms', keyframes([style({ transform: 'translateX(0px)' })]))),
+            transition('in => out', animate('200ms', keyframes([style({ transform: 'translateX(100px)', display: 'none' })]))),
+            transition('out => in', animate('200ms', keyframes([style({ transform: 'translateX(0px)'})]))),
         ]),
         trigger('slideLeftRightChat', [
             state(
@@ -46,10 +50,10 @@ import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
                 'out',
                 style({
                     transform: 'translateX(100px)',
-                    display: 'none',
+                    //display: 'none',
                 }),
             ),
-            transition('in => out', animate('200ms', keyframes([style({ transform: 'translateX(100px)' })]))),
+            transition('in => out', animate('200ms', keyframes([style({ transform: 'translateX(100px)', display: 'none' })]))),
             transition('out => in', animate('200ms', keyframes([style({ transform: 'translateX(0px)' })]))),
         ]),
         trigger('slideTopBottom', [
@@ -57,17 +61,18 @@ import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
                 'in',
                 style({
                     transform: 'translateY(0px)',
+                    //display: 'block !important'
                 }),
             ),
             state(
                 'out',
                 style({
                     transform: 'translateY(100px)',
-                    display: 'none',
+                    //display: 'none',
                 }),
             ),
-            transition('in => out', animate('200ms', keyframes([style({ transform: 'translateY(100px)' })]))),
-            transition('out => in', animate('200ms', keyframes([style({ transform: 'translateY(0px)' })]))),
+            transition('in => out', animate('200ms', keyframes([style({ transform: 'translateY(100px)', display: 'none' })]))),
+            transition('out => in', animate('200ms', keyframes([style({ transform: 'translateY(0px)'})]))),
         ]),
     ],
 })
@@ -104,6 +109,10 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     localUser: UserModel;
     remoteUsers: UserModel[];
     resizeTimeout;
+
+    //@ViewChild('streamComponentRemote') streamComponentRemote: StreamComponent;
+    @ViewChildren('streamComponentRemotes') streamComponentRemotes: QueryList<StreamComponent>;
+    @ViewChild('streamComponentLocal') streamComponentLocal: StreamComponent;
 
     constructor(
         private platform: Platform,
@@ -180,13 +189,12 @@ export class VideoRoomPage implements OnInit, OnDestroy {
         if (element) {
             element.classList.remove(this.BIG_ELEMENT_CLASS);
             this.bigElement = undefined;
-            this.openviduLayout.updateLayout();
+            this.updateLayout();
         }
     }
 
     micStatusChanged(): void {
         (<Publisher>this.localUser.getStreamManager()).publishAudio(!this.localUser.getStreamManager().stream.audioActive);
-        console.log('mic active', this.localUser.getStreamManager().stream.audioActive);
         if (this.localUser.getStreamManager().stream.audioActive) {
             this.micBtnIcon = 'mic';
             this.micBtnColor = 'light';
@@ -208,10 +216,13 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     }
 
     toggleCamera() {
-        this.OV.getDevices().then((devices: any) => {
+        this.OV.getDevices().then((devices: Array<any>) => {
+            console.warn("DEVICES ", devices);
+            console.log(devices);
             console.log(devices.filter((device) => device.kind === 'videoinput'));
             const videoArray = devices.filter((device) => device.kind === 'videoinput');
-
+            const rtcDevices  = cordova.plugins.iosrtc.enumerateDevices();
+            console.log("RTC:", rtcDevices);
             if (videoArray && videoArray.length > 0) {
                 const lastDeviceId = videoArray[videoArray.length - 1].deviceId;
                 const firstDeviceId = videoArray[0].deviceId;
@@ -226,14 +237,24 @@ export class VideoRoomPage implements OnInit, OnDestroy {
                     publishAudio: this.localUser.getStreamManager().stream.audioActive,
                     publishVideo: this.localUser.getStreamManager().stream.videoActive,
                 });
-
+                cordova.plugins.iosrtc.freeCamera();
                 this.localUser.setActualDeviceId(videSource);
                 this.session.unpublish(<Publisher>this.localUser.getStreamManager());
+                
+                this.session.publish(publisher);
                 this.localUser.setStreamManager(publisher);
-                this.session.publish(<Publisher>this.localUser.getStreamManager());
                 this.isBackCamera = !this.isBackCamera;
+                cordova.plugins.iosrtc.refreshVideos();
+
+                /*const newUser = new UserModel();
+                newUser.setStreamManager(publisher);
+                const nickname = 'NUEVO USER';
+                newUser.setNickname(nickname);
+                newUser.setType('remote');
+                this.remoteUsers.push(newUser);*/
+
                 this.cameraBtnColor = this.cameraBtnColor === 'light' ? 'primary' : 'light';
-            }
+        }
         });
     }
 
@@ -245,10 +266,10 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             componentProps: { user: this.localUser, messageList: this.messageList },
         });
 
-
         modal.onWillDismiss().then(() => {
             this.modalIsPresented = false;
             this.toggleButtons();
+            this.updateLayout();
         });
 
         return await modal.present().then(() => {
@@ -264,12 +285,13 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     }
 
     public toggleButtonsOrEnlargeStream(event) {
-        const element: HTMLElement = event.path.filter((e: HTMLElement) => e.className && e.className.includes('OT_root'))[0];
+        event.preventDefault();
+        event.stopPropagation(); 
+        const path = event.path || event.composedPath()
+        const element: HTMLElement = path.filter((e: HTMLElement) => e.className && e.className.includes('OT_root'))[0];
         if (this.bigElement && element === this.bigElement) {
-            console.log('Elemento local es igual que elemento pulsado');
             this.toggleButtons();
         } else if (this.bigElement !== element) {
-            console.log('Elemento local es diferente que elemento pulsado o no existe');
             if (this.bigElement) {
                 this.bigElement.classList.remove(this.BIG_ELEMENT_CLASS);
             } else {
@@ -278,7 +300,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             element.classList.add(this.BIG_ELEMENT_CLASS);
             this.bigElement = element;
         }
-        this.openviduLayout.updateLayout();
+        this.updateLayout();
     }
 
     private generateParticipantInfo() {
@@ -402,11 +424,18 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             )
             .then(() => {
                 if (this.platform.is('cordova')) {
-                    this.checkAndroidPermissions()
+                    if(this.platform.is('android')){
+                        console.log("Android platform");
+                        this.checkAndroidPermissions()
                         .then(() => {
                             this.connectWebCam();
                         })
                         .catch((err) => console.error(err));
+
+                    } else if (this.platform.is('ios')) {
+                        console.log("iOS platform");
+                        this.connectWebCam();
+                    }
                 } else {
                     this.connectWebCam();
                 }
@@ -478,44 +507,48 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     }
 
     private connectWebCam(): void {
-        this.localUser.setStreamManager(
-            this.OV.initPublisher(undefined, {
-                audioSource: undefined,
-                videoSource: undefined,
-                publishAudio: true,
-                publishVideo: true,
-                resolution: '640x480',
-                frameRate: 30,
-                insertMode: 'APPEND',
-            }),
-        );
-
-        if (this.session.capabilities.publish) {
-            this.session
-                .publish(<Publisher>this.localUser.getStreamManager())
-                .then(() => {
-                    this.openViduSrv.getRandomAvatar().then((avatar) => {
-                        this.localUser.setUserAvatar(avatar);
-                        this.sendSignalUserAvatar(this.localUser);
-                    });
-                })
-                .catch((err) => {
-                    console.error(err);
-                });
-        }
-
+        const publisher: Publisher = this.OV.initPublisher(undefined, {
+            audioSource: undefined,
+            videoSource: undefined,
+            publishAudio: true,
+            publishVideo: true,
+            resolution: '640x480',
+            frameRate: 30,
+            insertMode: 'APPEND',
+        });
         this.localUser.setNickname(this.myUserName);
         this.localUser.setConnectionId(this.session.connection.connectionId);
 
-        this.localUser.getStreamManager().on('streamPlaying', () => {
-            this.updateLayout();
-            (<HTMLElement>this.localUser.getStreamManager().videos[0].video).parentElement.classList.remove('custom-class');
-        });
+        if (this.session.capabilities.publish) {
+            this.session.publish(publisher).then(() => {
+                this.localUser.setStreamManager(publisher);
+                this.localUser.getStreamManager().on('streamPlaying', () => {
+                    this.updateLayout();
+                    (<HTMLElement>this.localUser.getStreamManager().videos[0].video).parentElement.classList.remove('custom-class');
+                });
+                this.openViduSrv.getRandomAvatar().then((avatar) => {
+                    this.localUser.setUserAvatar(avatar);
+                    this.sendSignalUserAvatar(this.localUser);
+                });
+            }).catch((err) => console.error(err));
+        }
     }
 
     private updateLayout() {
         this.resizeTimeout = setTimeout(() => {
             this.openviduLayout.updateLayout();
+            setTimeout(() => {
+                console.warn("STREAM Component local", this.streamComponentLocal);
+                console.warn("STREAM Component Remote", this.streamComponentRemotes);
+                if (this.streamComponentLocal) {
+                    this.streamComponentLocal.videoComponent.applyIosIonicVideoAttributes();
+                }
+                if (this.streamComponentRemotes.length > 0) {
+                    this.streamComponentRemotes.forEach((stream: StreamComponent) => {
+                        stream.videoComponent.applyIosIonicVideoAttributes()
+                    });
+                }
+            }, 250);
         }, 20);
     }
 
@@ -526,7 +559,6 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             message: message,
             buttons: ['OK'],
         });
-
         await alert.present();
     }
 }
