@@ -26,14 +26,12 @@ declare var cordova;
                 'in',
                 style({
                     transform: 'translateX(0px)',
-                    // display: 'block !important'
                 }),
             ),
             state(
                 'out',
                 style({
                     transform: 'translateX(100px)',
-                    //display: 'none',
                 }),
             ),
             transition('in => out', animate('200ms', keyframes([style({ transform: 'translateX(100px)', display: 'none' })]))),
@@ -50,7 +48,6 @@ declare var cordova;
                 'out',
                 style({
                     transform: 'translateX(100px)',
-                    //display: 'none',
                 }),
             ),
             transition('in => out', animate('200ms', keyframes([style({ transform: 'translateX(100px)', display: 'none' })]))),
@@ -61,14 +58,12 @@ declare var cordova;
                 'in',
                 style({
                     transform: 'translateY(0px)',
-                    //display: 'block !important'
                 }),
             ),
             state(
                 'out',
                 style({
                     transform: 'translateY(100px)',
-                    //display: 'none',
                 }),
             ),
             transition('in => out', animate('200ms', keyframes([style({ transform: 'translateY(100px)', display: 'none' })]))),
@@ -79,9 +74,9 @@ declare var cordova;
 export class VideoRoomPage implements OnInit, OnDestroy {
     // Constants
     ANDROID_PERMISSIONS = [
-        this.androidPermissions.PERMISSION.CAMERA,
-        this.androidPermissions.PERMISSION.RECORD_AUDIO,
-        this.androidPermissions.PERMISSION.MODIFY_AUDIO_SETTINGS,
+        'android.permission.CAMERA',
+        'android.permission.RECORD_AUDIO',
+        'android.permission.MODIFY_AUDIO_SETTINGS'
     ];
     BIG_ELEMENT_CLASS = 'OV_big';
 
@@ -110,7 +105,6 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     remoteUsers: UserModel[];
     resizeTimeout;
 
-    //@ViewChild('streamComponentRemote') streamComponentRemote: StreamComponent;
     @ViewChildren('streamComponentRemotes') streamComponentRemotes: QueryList<StreamComponent>;
     @ViewChild('streamComponentLocal') streamComponentLocal: StreamComponent;
 
@@ -217,12 +211,9 @@ export class VideoRoomPage implements OnInit, OnDestroy {
 
     toggleCamera() {
         this.OV.getDevices().then((devices: Array<any>) => {
-            console.warn("DEVICES ", devices);
-            console.log(devices);
-            console.log(devices.filter((device) => device.kind === 'videoinput'));
+            console.warn('DEVICES ', devices);
             const videoArray = devices.filter((device) => device.kind === 'videoinput');
-            const rtcDevices  = cordova.plugins.iosrtc.enumerateDevices();
-            console.log("RTC:", rtcDevices);
+
             if (videoArray && videoArray.length > 0) {
                 const lastDeviceId = videoArray[videoArray.length - 1].deviceId;
                 const firstDeviceId = videoArray[0].deviceId;
@@ -240,18 +231,11 @@ export class VideoRoomPage implements OnInit, OnDestroy {
                 cordova.plugins.iosrtc.freeCamera();
                 this.localUser.setActualDeviceId(videSource);
                 this.session.unpublish(<Publisher>this.localUser.getStreamManager());
-                
+
                 this.session.publish(publisher);
                 this.localUser.setStreamManager(publisher);
                 this.isBackCamera = !this.isBackCamera;
                 cordova.plugins.iosrtc.refreshVideos();
-
-                /*const newUser = new UserModel();
-                newUser.setStreamManager(publisher);
-                const nickname = 'NUEVO USER';
-                newUser.setNickname(nickname);
-                newUser.setType('remote');
-                this.remoteUsers.push(newUser);*/
 
                 this.cameraBtnColor = this.cameraBtnColor === 'light' ? 'primary' : 'light';
         }
@@ -286,8 +270,8 @@ export class VideoRoomPage implements OnInit, OnDestroy {
 
     public toggleButtonsOrEnlargeStream(event) {
         event.preventDefault();
-        event.stopPropagation(); 
-        const path = event.path || event.composedPath()
+        event.stopPropagation();
+        const path = event.path || event.composedPath();
         const element: HTMLElement = path.filter((e: HTMLElement) => e.className && e.className.includes('OT_root'))[0];
         if (this.bigElement && element === this.bigElement) {
             this.toggleButtons();
@@ -424,16 +408,18 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             )
             .then(() => {
                 if (this.platform.is('cordova')) {
-                    if(this.platform.is('android')){
-                        console.log("Android platform");
+                    if (this.platform.is('android')) {
+                        console.log('Android platform');
                         this.checkAndroidPermissions()
                         .then(() => {
                             this.connectWebCam();
                         })
-                        .catch((err) => console.error(err));
+                        .catch((err) => {
+                            console.error(err);
+                        });
 
                     } else if (this.platform.is('ios')) {
-                        console.log("iOS platform");
+                        console.log('iOS platform');
                         this.connectWebCam();
                     }
                 } else {
@@ -447,6 +433,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     }
 
     private checkAndroidPermissions(): Promise<any> {
+        console.log('Requesting Android Permissions');
         return new Promise((resolve, reject) => {
             this.platform.ready().then(() => {
                 this.androidPermissions
@@ -537,18 +524,18 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     private updateLayout() {
         this.resizeTimeout = setTimeout(() => {
             this.openviduLayout.updateLayout();
-            setTimeout(() => {
-                console.warn("STREAM Component local", this.streamComponentLocal);
-                console.warn("STREAM Component Remote", this.streamComponentRemotes);
-                if (this.streamComponentLocal) {
-                    this.streamComponentLocal.videoComponent.applyIosIonicVideoAttributes();
-                }
-                if (this.streamComponentRemotes.length > 0) {
-                    this.streamComponentRemotes.forEach((stream: StreamComponent) => {
-                        stream.videoComponent.applyIosIonicVideoAttributes()
-                    });
-                }
-            }, 250);
+            if (this.platform.is('cordova') && this.platform.is('ios')) {
+                setTimeout(() => {
+                    if (this.streamComponentLocal) {
+                        this.streamComponentLocal.videoComponent.applyIosIonicVideoAttributes();
+                    }
+                    if (this.streamComponentRemotes.length > 0) {
+                        this.streamComponentRemotes.forEach((stream: StreamComponent) => {
+                            stream.videoComponent.applyIosIonicVideoAttributes();
+                        });
+                    }
+                }, 250);
+            }
         }, 20);
     }
 

@@ -18,6 +18,6 @@ export class StreamComponent implements OnInit {
     constructor() {}
 
     ngOnInit() {
-        console.log("user", this.user);
+        console.log('user', this.user);
     }
 }
