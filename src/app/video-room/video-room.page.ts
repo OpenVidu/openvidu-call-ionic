@@ -224,7 +224,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
                     videoSource: videoSource,
                     publishAudio: this.localUser.getStreamManager().stream.audioActive,
                     publishVideo: this.localUser.getStreamManager().stream.videoActive,
-                    mirror: true
+                    mirror: videoSource === firstDeviceId
                 }).then((publisher) => {
                     this.localUser.setActualDeviceId(videoSource);
                     this.session.unpublish(<Publisher>this.localUser.getStreamManager());
