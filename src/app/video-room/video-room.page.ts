@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Input, HostListener, ViewChild, ElementRef, QueryList, ViewChildren } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ViewChild, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import { Platform, ModalController, AlertController } from '@ionic/angular';
 
 import { Router, ActivatedRoute, Params } from '@angular/router';
@@ -13,8 +13,6 @@ import { ChatComponent } from '../shared/components/chat/chat.component';
 
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { StreamComponent } from '../shared/components/stream/stream.component';
-
-declare var cordova;
 
 @Component({
     selector: 'app-video-room',
@@ -109,7 +107,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     @ViewChild('streamComponentLocal') streamComponentLocal: StreamComponent;
 
     constructor(
-        private platform: Platform,
+        public platform: Platform,
         private router: Router,
         private route: ActivatedRoute,
         private openViduSrv: OpenViduService,
@@ -210,32 +208,29 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     }
 
     toggleCamera() {
-        this.OV.getDevices().then((devices: Array<any>) => {
-            console.warn('DEVICES ', devices);
+        this.OV.getDevices().then((devices) => {
             const videoArray = devices.filter((device) => device.kind === 'videoinput');
-
+            console.log('DEVICES ', videoArray);
+            console.log('DEVICE SELECTED: ', this.localUser.getActualDeviceId());
             if (videoArray && videoArray.length > 0) {
-                const lastDeviceId = videoArray[videoArray.length - 1].deviceId;
-                const firstDeviceId = videoArray[0].deviceId;
-                let videSource: string;
-                if (lastDeviceId === this.localUser.getActualDeviceId()) {
-                    videSource = firstDeviceId;
-                } else {
-                    videSource = lastDeviceId;
-                }
-                const publisher = this.OV.initPublisher(undefined, {
-                    videoSource: videSource,
+                let videoSource: string;
+                // Select the first different device
+                const differentDevice = videoArray.filter((vidDevice) => vidDevice.deviceId !== this.localUser.getActualDeviceId())[0];
+                videoSource = !!differentDevice ? differentDevice.deviceId : this.localUser.getActualDeviceId();
+                console.log('SETTING DEVICE ID: ', videoSource);
+                this.OV.initPublisherAsync(undefined, {
+                    videoSource: videoSource,
                     publishAudio: this.localUser.getStreamManager().stream.audioActive,
                     publishVideo: this.localUser.getStreamManager().stream.videoActive,
-                });
-                this.localUser.setActualDeviceId(videSource);
-                this.session.unpublish(<Publisher>this.localUser.getStreamManager());
-
-                this.session.publish(publisher);
-                this.localUser.setStreamManager(publisher);
-                this.isBackCamera = !this.isBackCamera;
-                this.cameraBtnColor = this.cameraBtnColor === 'light' ? 'primary' : 'light';
-        }
+                }).then((publisher) => {
+                    this.localUser.setActualDeviceId(videoSource);
+                    this.session.unpublish(<Publisher>this.localUser.getStreamManager());
+                    this.localUser.setStreamManager(publisher);
+                    this.session.publish(<Publisher>this.localUser.getStreamManager());
+                    this.isBackCamera = !this.isBackCamera;
+                    this.cameraBtnColor = this.cameraBtnColor === 'light' ? 'primary' : 'light';
+                }).catch((error) => console.error(error));
+            }
         });
     }
 
@@ -491,7 +486,9 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     }
 
     private connectWebCam(): void {
-        const publisher: Publisher = this.OV.initPublisher(undefined, {
+        this.localUser.setNickname(this.myUserName);
+        this.localUser.setConnectionId(this.session.connection.connectionId);
+        this.OV.initPublisherAsync(undefined, {
             audioSource: undefined,
             videoSource: undefined,
             publishAudio: true,
@@ -499,23 +496,19 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             resolution: '640x480',
             frameRate: 30,
             insertMode: 'APPEND',
-        });
-        this.localUser.setNickname(this.myUserName);
-        this.localUser.setConnectionId(this.session.connection.connectionId);
+        }).then((publisher) => {
+            this.session.publish(publisher);
+            this.localUser.setStreamManager(publisher);
+            this.localUser.getStreamManager().on('streamPlaying', () => {
+                this.updateLayout();
+                (<HTMLElement>this.localUser.getStreamManager().videos[0].video).parentElement.classList.remove('custom-class');
+            });
+            this.openViduSrv.getRandomAvatar().then((avatar) => {
+                this.localUser.setUserAvatar(avatar);
+                this.sendSignalUserAvatar(this.localUser);
+            });
 
-        if (this.session.capabilities.publish) {
-            this.session.publish(publisher).then(() => {
-                this.localUser.setStreamManager(publisher);
-                this.localUser.getStreamManager().on('streamPlaying', () => {
-                    this.updateLayout();
-                    (<HTMLElement>this.localUser.getStreamManager().videos[0].video).parentElement.classList.remove('custom-class');
-                });
-                this.openViduSrv.getRandomAvatar().then((avatar) => {
-                    this.localUser.setUserAvatar(avatar);
-                    this.sendSignalUserAvatar(this.localUser);
-                });
-            }).catch((err) => console.error(err));
-        }
+        }).catch((error) => console.error(error));
     }
 
     private updateLayout() {

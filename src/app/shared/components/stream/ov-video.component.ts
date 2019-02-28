@@ -12,6 +12,7 @@ declare var cordova;
     styleUrls: ['./stream.component.scss'],
 })
 export class OpenViduVideoComponent implements AfterViewInit {
+
     @ViewChild('videoElement') elementRef: ElementRef;
 
     @Input() mutedSound: boolean;
@@ -27,6 +28,9 @@ export class OpenViduVideoComponent implements AfterViewInit {
     @Input()
     set streamManager(streamManager: StreamManager) {
         this._streamManager = streamManager;
+        if (!!this.elementRef) {
+            this._streamManager.addVideoElement(this.elementRef.nativeElement);
+        }
         if (this.isIos()) {
             this._streamManager.on('streamPropertyChanged', (event) => {
                 if ((<StreamPropertyChangedEvent>event).changedProperty === 'videoDimensions') {
