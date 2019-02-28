@@ -215,13 +215,16 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             if (videoArray && videoArray.length > 0) {
                 let videoSource: string;
                 // Select the first different device
-                const differentDevice = videoArray.filter((vidDevice) => vidDevice.deviceId !== this.localUser.getActualDeviceId())[0];
-                videoSource = !!differentDevice ? differentDevice.deviceId : this.localUser.getActualDeviceId();
+                const firstDeviceId = videoArray.shift().deviceId;
+                const lastDeviceId = videoArray.pop().deviceId;
+                videoSource = lastDeviceId === this.localUser.getActualDeviceId() ? firstDeviceId :  lastDeviceId;
+
                 console.log('SETTING DEVICE ID: ', videoSource);
                 this.OV.initPublisherAsync(undefined, {
                     videoSource: videoSource,
                     publishAudio: this.localUser.getStreamManager().stream.audioActive,
                     publishVideo: this.localUser.getStreamManager().stream.videoActive,
+                    mirror: true
                 }).then((publisher) => {
                     this.localUser.setActualDeviceId(videoSource);
                     this.session.unpublish(<Publisher>this.localUser.getStreamManager());
