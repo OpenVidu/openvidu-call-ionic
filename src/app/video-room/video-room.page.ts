@@ -228,15 +228,12 @@ export class VideoRoomPage implements OnInit, OnDestroy {
                     publishAudio: this.localUser.getStreamManager().stream.audioActive,
                     publishVideo: this.localUser.getStreamManager().stream.videoActive,
                 });
-                cordova.plugins.iosrtc.freeCamera();
                 this.localUser.setActualDeviceId(videSource);
                 this.session.unpublish(<Publisher>this.localUser.getStreamManager());
 
                 this.session.publish(publisher);
                 this.localUser.setStreamManager(publisher);
                 this.isBackCamera = !this.isBackCamera;
-                cordova.plugins.iosrtc.refreshVideos();
-
                 this.cameraBtnColor = this.cameraBtnColor === 'light' ? 'primary' : 'light';
         }
         });
