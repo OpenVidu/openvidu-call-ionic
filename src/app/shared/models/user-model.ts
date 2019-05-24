@@ -48,7 +48,6 @@ export class UserModel {
     /* Setters */
 
     public setStreamManager(streamManager: StreamManager) {
-        console.log('guardadndo stream manager', streamManager);
         this.streamManager = streamManager;
     }
 
