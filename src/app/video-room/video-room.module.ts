@@ -9,6 +9,7 @@ import { VideoRoomPage } from './video-room.page';
 import { StreamComponent } from '../shared/components/stream/stream.component';
 import { OpenViduVideoComponent } from '../shared/components/stream/ov-video.component';
 import { ChatComponent } from '../shared/components/chat/chat.component';
+import { SettingUpModalComponent } from '../shared/components/setting-up-modal/setting-up-modal.component';
 
 
 const routes: Routes = [
@@ -25,8 +26,8 @@ const routes: Routes = [
     IonicModule,
     RouterModule.forChild(routes),
   ],
-  declarations: [VideoRoomPage, StreamComponent, ChatComponent, OpenViduVideoComponent],
+  declarations: [VideoRoomPage, StreamComponent, ChatComponent, SettingUpModalComponent, OpenViduVideoComponent],
   exports: [],
-  entryComponents: [ChatComponent]
+  entryComponents: [ChatComponent, SettingUpModalComponent]
 })
 export class VideoRoomPageModule {}

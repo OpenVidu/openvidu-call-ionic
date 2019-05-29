@@ -7,6 +7,10 @@ export class UserModel {
     private type: 'local' | 'remote';
     private actualDeviceId: string;
     private avatar: string;
+    private audioActive: boolean;
+    private videoActive: boolean;
+    private audioSource: string;
+    private videoSource: string;
 
     constructor() {
         this.connectionId = '';
@@ -14,6 +18,10 @@ export class UserModel {
         this.streamManager = null;
         this.type = 'local';
         this.actualDeviceId = '';
+        this.audioActive = true;
+        this.videoActive = true;
+        this.audioSource = undefined;
+        this.videoSource = undefined;
     }
 
     /* Getters */
@@ -45,6 +53,22 @@ export class UserModel {
         return this.avatar;
     }
 
+    public isAudioActive(): boolean {
+        return this.audioActive;
+    }
+
+    public isVideoActive(): boolean {
+        return this.videoActive;
+    }
+
+    public getAudioSource(): string {
+        return this.audioSource;
+    }
+
+    public getVideoSource(): string {
+        return this.videoSource;
+    }
+
     /* Setters */
 
     public setStreamManager(streamManager: StreamManager) {
@@ -66,5 +90,21 @@ export class UserModel {
 
     public setUserAvatar(avatar: string): void {
         this.avatar = avatar;
+    }
+
+    public setAudioActive(isAudioActive: boolean) {
+        this.audioActive = isAudioActive;
+    }
+
+    public setVideoActive(isVideoActive: boolean) {
+        this.videoActive = isVideoActive;
+    }
+
+    public setAudioSource(audioSource: string) {
+        this.audioSource = audioSource;
+    }
+
+    public setVideoSource(videoSource: string) {
+        this.videoSource = videoSource;
     }
 }

@@ -13,6 +13,7 @@ import { ChatComponent } from '../shared/components/chat/chat.component';
 
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { StreamComponent } from '../shared/components/stream/stream.component';
+import { SettingUpModalComponent } from '../shared/components/setting-up-modal/setting-up-modal.component';
 
 @Component({
     selector: 'app-video-room',
@@ -127,9 +128,31 @@ export class VideoRoomPage implements OnInit, OnDestroy {
         this.updateLayout();
     }
 
-    ngOnInit() {
-        this.localUser = new UserModel();
+    async ngOnInit() {
+
+        // Open modal to setting up the session
+        const modal = await this.modalController.create({
+            component: SettingUpModalComponent,
+            componentProps: {}
+          });
+
+          modal.onWillDismiss().then((data: any) => {
+              const localUser = data.data;
+              if (localUser) {
+                  this.localUser = localUser;
+                    this.initApp();
+              } else {
+                  // Go back
+                    this.router.navigate(['/']);
+              }
+        });
+        return await modal.present();
+    }
+
+    initApp() {
         this.localUser.setType('local');
+        this.checkAudioButton();
+        this.checkVideoButton();
         this.remoteUsers = [];
         this.generateParticipantInfo();
         this.joinToSession();
@@ -185,19 +208,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
         }
     }
 
-    micStatusChanged(): void {
-        (<Publisher>this.localUser.getStreamManager()).publishAudio(!this.localUser.getStreamManager().stream.audioActive);
-        if (this.localUser.getStreamManager().stream.audioActive) {
-            this.micBtnIcon = 'mic';
-            this.micBtnColor = 'light';
-        } else {
-            this.micBtnIcon = 'mic-off';
-            this.micBtnColor = 'primary';
-        }
-    }
-
-    camStatusChanged(): void {
-        (<Publisher>this.localUser.getStreamManager()).publishVideo(!this.localUser.getStreamManager().stream.videoActive);
+    checkVideoButton() {
         if (this.localUser.getStreamManager().stream.videoActive) {
             this.camBtnIcon = 'videocam';
             this.camBtnColor = 'light';
@@ -207,34 +218,56 @@ export class VideoRoomPage implements OnInit, OnDestroy {
         }
     }
 
-    toggleCamera() {
-        this.OV.getDevices().then((devices) => {
-            const videoArray = devices.filter((device) => device.kind === 'videoinput');
-            console.log('DEVICES ', videoArray);
-            console.log('DEVICE SELECTED: ', this.localUser.getActualDeviceId());
-            if (videoArray && videoArray.length > 0) {
-                let videoSource: string;
-                // Select the first different device
-                const firstDeviceId = videoArray.shift().deviceId;
-                const lastDeviceId = videoArray.pop().deviceId;
-                videoSource = lastDeviceId === this.localUser.getActualDeviceId() ? firstDeviceId :  lastDeviceId;
+    checkAudioButton() {
+        if (this.localUser.getStreamManager().stream.audioActive) {
+            this.micBtnIcon = 'mic';
+            this.micBtnColor = 'light';
+        } else {
+            this.micBtnIcon = 'mic-off';
+            this.micBtnColor = 'primary';
+        }
+    }
 
-                console.log('SETTING DEVICE ID: ', videoSource);
-                this.OV.initPublisherAsync(undefined, {
-                    videoSource: videoSource,
-                    publishAudio: this.localUser.getStreamManager().stream.audioActive,
-                    publishVideo: this.localUser.getStreamManager().stream.videoActive,
-                    mirror: videoSource === firstDeviceId
-                }).then((publisher) => {
-                    this.localUser.setActualDeviceId(videoSource);
-                    this.session.unpublish(<Publisher>this.localUser.getStreamManager());
-                    this.localUser.setStreamManager(publisher);
-                    this.session.publish(<Publisher>this.localUser.getStreamManager());
-                    this.isBackCamera = !this.isBackCamera;
-                    this.cameraBtnColor = this.cameraBtnColor === 'light' ? 'primary' : 'light';
-                }).catch((error) => console.error(error));
-            }
-        });
+    micStatusChanged(): void {
+        (<Publisher>this.localUser.getStreamManager()).publishAudio(!this.localUser.getStreamManager().stream.audioActive);
+        this.checkAudioButton();
+    }
+
+    camStatusChanged(): void {
+        (<Publisher>this.localUser.getStreamManager()).publishVideo(!this.localUser.getStreamManager().stream.videoActive);
+        this.checkVideoButton();
+    }
+
+    toggleCamera() {
+        if (this.platform.is('cordova')) {
+            this.OV.getDevices().then((devices) => {
+                const videoArray = devices.filter((device) => device.kind === 'videoinput');
+                console.log('DEVICES ', videoArray);
+                console.log('DEVICE SELECTED: ', this.localUser.getActualDeviceId());
+                if (videoArray && videoArray.length > 0) {
+                    let videoSource: string;
+                    // Select the first different device
+                    const firstDeviceId = videoArray.shift().deviceId;
+                    const lastDeviceId = videoArray.pop().deviceId;
+                    videoSource = lastDeviceId === this.localUser.getActualDeviceId() ? firstDeviceId :  lastDeviceId;
+
+                    console.log('SETTING DEVICE ID: ', videoSource);
+                    this.OV.initPublisherAsync(undefined, {
+                        videoSource: videoSource,
+                        publishAudio: this.localUser.getStreamManager().stream.audioActive,
+                        publishVideo: this.localUser.getStreamManager().stream.videoActive,
+                        mirror: videoSource === firstDeviceId
+                    }).then((publisher) => {
+                        this.localUser.setActualDeviceId(videoSource);
+                        this.session.unpublish(<Publisher>this.localUser.getStreamManager());
+                        this.localUser.setStreamManager(publisher);
+                        this.session.publish(<Publisher>this.localUser.getStreamManager());
+                        this.isBackCamera = !this.isBackCamera;
+                        this.cameraBtnColor = this.cameraBtnColor === 'light' ? 'primary' : 'light';
+                    }).catch((error) => console.error(error));
+                }
+            });
+        }
     }
 
     async toggleChat() {
@@ -492,10 +525,10 @@ export class VideoRoomPage implements OnInit, OnDestroy {
         this.localUser.setNickname(this.myUserName);
         this.localUser.setConnectionId(this.session.connection.connectionId);
         this.OV.initPublisherAsync(undefined, {
-            audioSource: undefined,
-            videoSource: undefined,
-            publishAudio: true,
-            publishVideo: true,
+            audioSource: this.localUser.getAudioSource(),
+            videoSource: this.localUser.getVideoSource(),
+            publishAudio: this.localUser.isAudioActive(),
+            publishVideo: this.localUser.isVideoActive(),
             resolution: '640x480',
             frameRate: 30,
             insertMode: 'APPEND',

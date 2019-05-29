@@ -1,0 +1,45 @@
+<ion-header>
+    <ion-toolbar color="dark">
+        <ion-buttons slot="primary">
+            <ion-button color="light" (click)="dismiss()">
+                <ion-icon slot="icon-only" name="close"></ion-icon>
+            </ion-button>
+        </ion-buttons>
+        <ion-title>SETTING UP </ion-title>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content padding id="content">
+  <div  id="ovVideo">
+      <ov-video *ngIf="localUser && localUser.getStreamManager()" [streamManager]="localUser.getStreamManager()"></ov-video>
+    </div>
+    <!-- Mic devices -->
+    <ion-item id="audioItem">
+
+        <ion-icon name="mic"></ion-icon>
+        <ion-label></ion-label>
+        <ion-select placeholder="Audio Devices" (ionChange)="setAudioDevice($event)">
+            <ion-select-option value="None">Disable</ion-select-option>
+            <ion-select-option *ngFor="let device of audioDevices" value="{{device.deviceId}}">{{device.label}}</ion-select-option>
+        </ion-select>
+    </ion-item>
+
+    <!-- Cam devices -->
+    <ion-item id="videoItem">
+
+        <ion-icon name="videocam"></ion-icon>
+
+        <ion-label></ion-label>
+        <ion-select placeholder="Cam Devices" (ionChange)="setVideoDevice($event)">
+            <ion-select-option value="None">Disable</ion-select-option>
+            <ion-select-option *ngFor="let device of videoDevices" value="{{device.deviceId}}">{{device.label}}</ion-select-option>
+        </ion-select>
+    </ion-item>
+</ion-content>
+
+<ion-footer [style.height]="'55px'" [style.background]="'white'">
+    <ion-button id="join-button" (click)="join()" expand="block" shape="round" color="primary">
+        <ion-icon slot="start" name="videocam"></ion-icon>
+        Join
+    </ion-button>
+</ion-footer>
