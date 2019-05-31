@@ -1,7 +1,9 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ModalController, Platform } from '@ionic/angular';
 import { OpenVidu, Publisher } from 'openvidu-browser';
 import { UserModel } from '../../models/user-model';
+
+declare var cordova;
 
 @Component({
     selector: 'app-setting-up-modal',
@@ -14,7 +16,7 @@ export class SettingUpModalComponent implements OnInit {
     audioDevices: any[] = [];
     videoDevices: any[] = [];
 
-    constructor(public modalController: ModalController) {}
+    constructor(public modalController: ModalController, public platform: Platform) {}
 
     ngOnInit() {
         this.OV = new OpenVidu();
@@ -25,7 +27,7 @@ export class SettingUpModalComponent implements OnInit {
     }
 
     getDevices() {
-        return new Promise((resolve, reject) => {
+        return new Promise((resolve) => {
             this.OV.getDevices().then((devices) => {
                 resolve(devices);
             });
@@ -86,8 +88,13 @@ export class SettingUpModalComponent implements OnInit {
         (<Publisher>this.localUser.getStreamManager()).publishAudio(!!this.localUser.getAudioSource());
     }
 
+    refreshVideos() {
+        if (this.platform.is('ios') && this.platform.is('cordova')) {
+            cordova.plugins.iosrtc.refreshVideos();
+        }
+    }
+
     join() {
-        // this.router.navigate(['/' + this.mySessionId]);
         this.modalController.dismiss(this.localUser);
     }
 
@@ -108,7 +115,6 @@ export class SettingUpModalComponent implements OnInit {
                 .then((publisher: Publisher) => {
                     // this.subscribeToVolumeChange(publisher);
                     this.localUser.setStreamManager(publisher);
-
                     resolve(publisher);
                 })
                 .catch((error) => reject(error));
@@ -116,8 +122,10 @@ export class SettingUpModalComponent implements OnInit {
     }
 
     private destroyPublisher() {
-        (<Publisher>this.localUser.getStreamManager()).off('streamAudioVolumeChange');
+        console.log("Destroying publisher...");
+        //(<Publisher>this.localUser.getStreamManager()).off('streamAudioVolumeChange');
         this.localUser.getStreamManager().stream.disposeWebRtcPeer();
         this.localUser.getStreamManager().stream.disposeMediaStream();
+        this.localUser.setStreamManager(null);
     }
 }

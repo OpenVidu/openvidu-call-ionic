@@ -27,11 +27,11 @@ export class AppComponent {
         console.log("Initializing iosrtc");
         cordova.plugins.iosrtc.registerGlobals();
         // load adapter.js (version 4.0.1)
-        const script2 = document.createElement('script');
+        /*const script2 = document.createElement('script');
         script2.type = 'text/javascript';
         script2.src = 'assets/libs/adapter-4.0.1.js';
         script2.async = false;
-        document.head.appendChild(script2);
+        document.head.appendChild(script2);*/
     }
     });
   }

@@ -9,13 +9,12 @@
     </ion-toolbar>
 </ion-header>
 
-<ion-content padding id="content">
-  <div  id="ovVideo">
-      <ov-video *ngIf="localUser && localUser.getStreamManager()" [streamManager]="localUser.getStreamManager()"></ov-video>
+<ion-content padding id="content" [scrollEvents]="true" (ionScroll)="refreshVideos()">
+  <div  id="ovVideo" *ngIf="localUser && localUser.getStreamManager()"> 
+      <ov-video [streamManager]="localUser.getStreamManager()"></ov-video>
     </div>
     <!-- Mic devices -->
     <ion-item id="audioItem">
-
         <ion-icon name="mic"></ion-icon>
         <ion-label></ion-label>
         <ion-select placeholder="Audio Devices" (ionChange)="setAudioDevice($event)">
@@ -28,7 +27,6 @@
     <ion-item id="videoItem">
 
         <ion-icon name="videocam"></ion-icon>
-
         <ion-label></ion-label>
         <ion-select placeholder="Cam Devices" (ionChange)="setVideoDevice($event)">
             <ion-select-option value="None">Disable</ion-select-option>

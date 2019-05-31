@@ -44,7 +44,7 @@
     </ion-fab-button>
   </ion-fab>
 
-  <ion-fab vertical="bottom" horizontal="center" id="exitButton" [@slideTopBottom]="buttonsVisibility">
+  <ion-fab  *ngIf="!setUpModalIsPresented" vertical="bottom" horizontal="center" id="exitButton" [@slideTopBottom]="buttonsVisibility">
     <ion-fab-button color="danger" (click)="exitSession()">
       <ion-icon name="call"></ion-icon>
     </ion-fab-button>

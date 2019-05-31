@@ -14,6 +14,7 @@ import { ChatComponent } from '../shared/components/chat/chat.component';
 import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { StreamComponent } from '../shared/components/stream/stream.component';
 import { SettingUpModalComponent } from '../shared/components/setting-up-modal/setting-up-modal.component';
+declare var cordova;
 
 @Component({
     selector: 'app-video-room',
@@ -92,6 +93,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     isBackCamera = false;
     messageList: { connectionId: string; message: string; userAvatar: string }[] = [];
     modalIsPresented = false;
+    setUpModalIsPresented = true;
 
     OV: OpenVidu;
     @ViewChild('mainStream') mainStream: ElementRef;
@@ -129,10 +131,10 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     }
 
     async ngOnInit() {
-
         // Open modal to setting up the session
         const modal = await this.modalController.create({
             component: SettingUpModalComponent,
+            showBackdrop: false,
             componentProps: {}
           });
 
@@ -140,22 +142,24 @@ export class VideoRoomPage implements OnInit, OnDestroy {
               const localUser = data.data;
               if (localUser) {
                   this.localUser = localUser;
-                    this.initApp();
+                  this.setUpModalIsPresented = false;
+                  this.initApp();
               } else {
                   // Go back
                     this.router.navigate(['/']);
               }
+        });        
+        return await modal.present().then(() => {
+            this.refrshVideos();
         });
-        return await modal.present();
     }
 
     initApp() {
         this.localUser.setType('local');
-        this.checkAudioButton();
-        this.checkVideoButton();
+        //this.checkAudioButton();
+        //this.checkVideoButton();
         this.remoteUsers = [];
         this.generateParticipantInfo();
-        this.joinToSession();
         this.openviduLayout = new OpenViduLayout();
         this.openviduLayoutOptions = {
             maxRatio: 3 / 2, // The narrowest ratio that will be used (default 2x3)
@@ -171,6 +175,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             animate: true, // Whether you want to animate the transitions
         };
         this.openviduLayout.initLayoutContainer(document.getElementById('layout'), this.openviduLayoutOptions);
+        this.joinToSession();
     }
 
     ngOnDestroy() {
@@ -524,7 +529,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     private connectWebCam(): void {
         this.localUser.setNickname(this.myUserName);
         this.localUser.setConnectionId(this.session.connection.connectionId);
-        this.OV.initPublisherAsync(undefined, {
+        /*this.OV.initPublisherAsync(undefined, {
             audioSource: this.localUser.getAudioSource(),
             videoSource: this.localUser.getVideoSource(),
             publishAudio: this.localUser.isAudioActive(),
@@ -544,7 +549,18 @@ export class VideoRoomPage implements OnInit, OnDestroy {
                 this.sendSignalUserAvatar(this.localUser);
             });
 
-        }).catch((error) => console.error(error));
+        }).catch((error) => console.error(error));*/
+        this.session.publish(<Publisher>this.localUser.getStreamManager());
+            this.localUser.getStreamManager().on('streamPlaying', () => {
+                this.updateLayout();
+                (<HTMLElement>this.localUser.getStreamManager().videos[0].video).parentElement.classList.remove('custom-class');
+            });
+            this.openViduSrv.getRandomAvatar().then((avatar) => {
+                this.localUser.setUserAvatar(avatar);
+                this.sendSignalUserAvatar(this.localUser);
+            });
+            this.updateLayout();
+
     }
 
     private updateLayout() {
@@ -563,6 +579,12 @@ export class VideoRoomPage implements OnInit, OnDestroy {
                 }, 250);
             }
         }, 20);
+    }
+
+    private refrshVideos(){
+        if (this.platform.is('ios') && this.platform.is('cordova')) {
+            cordova.plugins.iosrtc.refreshVideos();
+        } 
     }
 
     private async openAlertError(message: string) {
