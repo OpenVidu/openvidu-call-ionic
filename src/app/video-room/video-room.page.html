@@ -22,7 +22,7 @@
 
 
   <ion-fab *ngIf="localUser &&  localUser.getStreamManager()" vertical="top" horizontal="end" slot="fixed" id="rightButtons">
-    <ion-fab-button [@slideLeftRight]="buttonsVisibility" size="small" [color]="cameraBtnColor" id="camButton" (click)="toggleCamera()" [disabled]="this.platform.is('ios')">
+    <ion-fab-button [@slideLeftRight]="buttonsVisibility" size="small" [color]="cameraBtnColor" id="camButton" (click)="toggleCamera()">
       <ion-icon name="reverse-camera"></ion-icon>
     </ion-fab-button>
 

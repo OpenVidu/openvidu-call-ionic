@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { ModalController, Platform } from '@ionic/angular';
 import { OpenVidu, Publisher } from 'openvidu-browser';
 import { UserModel } from '../../models/user-model';
@@ -21,29 +21,16 @@ export class SettingUpModalComponent implements OnInit {
     ngOnInit() {
         this.OV = new OpenVidu();
         this.localUser = new UserModel();
-        this.initAudioDevices();
-        this.initVideoDevices();
+        this.initDevices();
         this.initPublisher();
     }
 
-    getDevices() {
-        return new Promise((resolve) => {
-            this.OV.getDevices().then((devices) => {
-                resolve(devices);
-            });
-        });
-    }
-
-    initAudioDevices() {
-        this.getDevices().then((devices: any) => {
+    initDevices() {
+        this.OV.getDevices().then((devices: any) => {
             this.audioDevices = devices.filter((device) => device.kind === 'audioinput');
-            console.log('Audio devices: ', this.audioDevices);
-        });
-    }
-
-    initVideoDevices() {
-        this.getDevices().then((devices: any) => {
             this.videoDevices = devices.filter((device) => device.kind === 'videoinput');
+            this.localUser.setVideoSource(this.videoDevices.filter((device: any) => device.label.includes("Front"))[0].deviceId)
+            console.log('Audio devices: ', this.audioDevices);
             console.log('Video devices: ', this.videoDevices);
         });
     }
@@ -81,11 +68,12 @@ export class SettingUpModalComponent implements OnInit {
     }
 
     camOff() {
-        (<Publisher>this.localUser.getStreamManager()).publishVideo(!!this.localUser.getVideoSource());
+        (<Publisher>this.localUser.getStreamManager()).publishVideo(false);
+
     }
 
     micOff() {
-        (<Publisher>this.localUser.getStreamManager()).publishAudio(!!this.localUser.getAudioSource());
+        (<Publisher>this.localUser.getStreamManager()).publishAudio(false);
     }
 
     refreshVideos() {
@@ -95,25 +83,26 @@ export class SettingUpModalComponent implements OnInit {
     }
 
     join() {
-        this.modalController.dismiss(this.localUser);
+        this.modalController.dismiss({user: this.localUser, videoDevices: this.videoDevices});
     }
 
     private initPublisher(): Promise<any> {
         return new Promise((resolve, reject) => {
             console.log('initialize publisher');
-            console.log('audioDevice', this.localUser.getAudioSource());
-            console.log('videoDevice', this.localUser.getVideoSource());
-            console.log('aduio Active ', this.localUser.isAudioActive());
-            console.log('video active', this.localUser.isVideoActive());
+            let device = this.videoDevices.filter((device) => 
+                 device.deviceId === this.localUser.getVideoSource()
+            );
+            let isBackCamera = !!device[0] && device[0].label.includes("Back"); 
+            this.localUser.setIsBackCamera(isBackCamera);
+            
             this.OV.initPublisherAsync(undefined, {
                 audioSource: this.localUser.getAudioSource(),
                 videoSource: this.localUser.getVideoSource(),
                 publishAudio: this.localUser.isAudioActive(),
                 publishVideo: this.localUser.isVideoActive(),
-                // mirror: this.camValue && this.camValue.type === 'FRONT'
+                mirror: !this.localUser.isBackCamera()
             })
                 .then((publisher: Publisher) => {
-                    // this.subscribeToVolumeChange(publisher);
                     this.localUser.setStreamManager(publisher);
                     resolve(publisher);
                 })
@@ -123,7 +112,6 @@ export class SettingUpModalComponent implements OnInit {
 
     private destroyPublisher() {
         console.log("Destroying publisher...");
-        //(<Publisher>this.localUser.getStreamManager()).off('streamAudioVolumeChange');
         this.localUser.getStreamManager().stream.disposeWebRtcPeer();
         this.localUser.getStreamManager().stream.disposeMediaStream();
         this.localUser.setStreamManager(null);

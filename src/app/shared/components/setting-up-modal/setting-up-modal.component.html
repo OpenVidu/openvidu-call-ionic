@@ -11,7 +11,7 @@
 
 <ion-content padding id="content" [scrollEvents]="true" (ionScroll)="refreshVideos()">
   <div  id="ovVideo" *ngIf="localUser && localUser.getStreamManager()"> 
-      <ov-video [streamManager]="localUser.getStreamManager()"></ov-video>
+      <ov-video [streamManager]="localUser.getStreamManager()" [isBackCamera]="localUser.isBackCamera()"></ov-video>
     </div>
     <!-- Mic devices -->
     <ion-item id="audioItem">

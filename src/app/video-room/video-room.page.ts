@@ -90,10 +90,10 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     chatBtnColor = 'light';
     bigElement: HTMLElement;
     messageReceived = false;
-    isBackCamera = false;
     messageList: { connectionId: string; message: string; userAvatar: string }[] = [];
     modalIsPresented = false;
     setUpModalIsPresented = true;
+    videoDevices: any[] = [];
 
     OV: OpenVidu;
     @ViewChild('mainStream') mainStream: ElementRef;
@@ -139,9 +139,9 @@ export class VideoRoomPage implements OnInit, OnDestroy {
           });
 
           modal.onWillDismiss().then((data: any) => {
-              const localUser = data.data;
-              if (localUser) {
-                  this.localUser = localUser;
+              if (data.data && data.data.user) {
+                  this.localUser = data.data.user;
+                  this.videoDevices = data.data.videoDevices;
                   this.setUpModalIsPresented = false;
                   this.initApp();
               } else {
@@ -150,14 +150,14 @@ export class VideoRoomPage implements OnInit, OnDestroy {
               }
         });        
         return await modal.present().then(() => {
-            this.refrshVideos();
+            this.refreshVideos();
         });
     }
 
     initApp() {
         this.localUser.setType('local');
-        //this.checkAudioButton();
-        //this.checkVideoButton();
+        this.checkAudioButton();
+        this.checkVideoButton();
         this.remoteUsers = [];
         this.generateParticipantInfo();
         this.openviduLayout = new OpenViduLayout();
@@ -214,7 +214,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     }
 
     checkVideoButton() {
-        if (this.localUser.getStreamManager().stream.videoActive) {
+        if (this.localUser.isVideoActive()) {
             this.camBtnIcon = 'videocam';
             this.camBtnColor = 'light';
         } else {
@@ -224,7 +224,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     }
 
     checkAudioButton() {
-        if (this.localUser.getStreamManager().stream.audioActive) {
+        if (this.localUser.isAudioActive()) {
             this.micBtnIcon = 'mic';
             this.micBtnColor = 'light';
         } else {
@@ -234,44 +234,44 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     }
 
     micStatusChanged(): void {
-        (<Publisher>this.localUser.getStreamManager()).publishAudio(!this.localUser.getStreamManager().stream.audioActive);
+        this.localUser.setAudioActive(!this.localUser.getStreamManager().stream.audioActive);
+        (<Publisher>this.localUser.getStreamManager()).publishAudio(this.localUser.isAudioActive());
         this.checkAudioButton();
     }
 
     camStatusChanged(): void {
-        (<Publisher>this.localUser.getStreamManager()).publishVideo(!this.localUser.getStreamManager().stream.videoActive);
+        this.localUser.setVideoActive(!this.localUser.getStreamManager().stream.videoActive);
+        (<Publisher>this.localUser.getStreamManager()).publishVideo(this.localUser.isVideoActive());
         this.checkVideoButton();
     }
 
     toggleCamera() {
         if (this.platform.is('cordova')) {
-            this.OV.getDevices().then((devices) => {
-                const videoArray = devices.filter((device) => device.kind === 'videoinput');
-                console.log('DEVICES ', videoArray);
-                console.log('DEVICE SELECTED: ', this.localUser.getActualDeviceId());
-                if (videoArray && videoArray.length > 0) {
-                    let videoSource: string;
-                    // Select the first different device
-                    const firstDeviceId = videoArray.shift().deviceId;
-                    const lastDeviceId = videoArray.pop().deviceId;
-                    videoSource = lastDeviceId === this.localUser.getActualDeviceId() ? firstDeviceId :  lastDeviceId;
+            if (this.videoDevices && this.videoDevices.length > 0) {
+                let videoSource: string;
+                // Select the first different device
+                videoSource = this.videoDevices.filter((device) => device.deviceId !== this.localUser.getVideoSource())[0].deviceId
+                this.localUser.setVideoSource(videoSource);
 
-                    console.log('SETTING DEVICE ID: ', videoSource);
-                    this.OV.initPublisherAsync(undefined, {
-                        videoSource: videoSource,
-                        publishAudio: this.localUser.getStreamManager().stream.audioActive,
-                        publishVideo: this.localUser.getStreamManager().stream.videoActive,
-                        mirror: videoSource === firstDeviceId
-                    }).then((publisher) => {
-                        this.localUser.setActualDeviceId(videoSource);
-                        this.session.unpublish(<Publisher>this.localUser.getStreamManager());
+                this.localUser.setIsBackCamera(!this.localUser.isBackCamera());
+
+                console.log('SETTING DEVICE ID: ', videoSource);
+                this.OV.initPublisherAsync(undefined, {
+                    videoSource: this.localUser.getVideoSource(),
+                    publishAudio: this.localUser.isVideoActive(),
+                    publishVideo: this.localUser.isVideoActive(),
+                    mirror: this.localUser.isBackCamera()
+                }).then((publisher) => {
+                    this.session.unpublish(<Publisher>this.localUser.getStreamManager());
+                    this.cameraBtnColor = this.cameraBtnColor === 'light' ? 'primary' : 'light';
+                    this.localUser.setStreamManager(null);
+                    setTimeout(() => {
                         this.localUser.setStreamManager(publisher);
-                        this.session.publish(<Publisher>this.localUser.getStreamManager());
-                        this.isBackCamera = !this.isBackCamera;
-                        this.cameraBtnColor = this.cameraBtnColor === 'light' ? 'primary' : 'light';
-                    }).catch((error) => console.error(error));
-                }
-            });
+                        this.updateLayout();
+                        this.session.publish(publisher);
+                    });
+                }).catch((error) => console.error(error));
+            }
         }
     }
 
@@ -529,59 +529,40 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     private connectWebCam(): void {
         this.localUser.setNickname(this.myUserName);
         this.localUser.setConnectionId(this.session.connection.connectionId);
-        /*this.OV.initPublisherAsync(undefined, {
-            audioSource: this.localUser.getAudioSource(),
-            videoSource: this.localUser.getVideoSource(),
-            publishAudio: this.localUser.isAudioActive(),
-            publishVideo: this.localUser.isVideoActive(),
-            resolution: '640x480',
-            frameRate: 30,
-            insertMode: 'APPEND',
-        }).then((publisher) => {
-            this.session.publish(publisher);
-            this.localUser.setStreamManager(publisher);
-            this.localUser.getStreamManager().on('streamPlaying', () => {
-                this.updateLayout();
-                (<HTMLElement>this.localUser.getStreamManager().videos[0].video).parentElement.classList.remove('custom-class');
-            });
-            this.openViduSrv.getRandomAvatar().then((avatar) => {
-                this.localUser.setUserAvatar(avatar);
-                this.sendSignalUserAvatar(this.localUser);
-            });
-
-        }).catch((error) => console.error(error));*/
         this.session.publish(<Publisher>this.localUser.getStreamManager());
-            this.localUser.getStreamManager().on('streamPlaying', () => {
-                this.updateLayout();
-                (<HTMLElement>this.localUser.getStreamManager().videos[0].video).parentElement.classList.remove('custom-class');
-            });
-            this.openViduSrv.getRandomAvatar().then((avatar) => {
-                this.localUser.setUserAvatar(avatar);
-                this.sendSignalUserAvatar(this.localUser);
-            });
+        this.localUser.getStreamManager().on('streamPlaying', () => {
             this.updateLayout();
-
+            (<HTMLElement>this.localUser.getStreamManager().videos[0].video).parentElement.classList.remove('custom-class');
+        });
+        this.openViduSrv.getRandomAvatar().then((avatar) => {
+            this.localUser.setUserAvatar(avatar);
+            this.sendSignalUserAvatar(this.localUser);
+        });
+        this.updateLayout();
     }
 
     private updateLayout() {
         this.resizeTimeout = setTimeout(() => {
-            this.openviduLayout.updateLayout();
-            if (this.platform.is('cordova') && this.platform.is('ios')) {
-                setTimeout(() => {
-                    if (this.streamComponentLocal) {
-                        this.streamComponentLocal.videoComponent.applyIosIonicVideoAttributes();
-                    }
-                    if (this.streamComponentRemotes.length > 0) {
-                        this.streamComponentRemotes.forEach((stream: StreamComponent) => {
-                            stream.videoComponent.applyIosIonicVideoAttributes();
-                        });
-                    }
-                }, 250);
+            if (this.openviduLayout) {
+                this.openviduLayout.updateLayout();
+                if (this.platform.is('cordova') && this.platform.is('ios')) {
+                    setTimeout(() => {
+                        if (this.streamComponentLocal) {
+                            this.streamComponentLocal.videoComponent.applyIosIonicVideoAttributes();
+                        }
+                        if (this.streamComponentRemotes.length > 0) {
+                            this.streamComponentRemotes.forEach((stream: StreamComponent) => {
+                                stream.videoComponent.applyIosIonicVideoAttributes();
+                            });
+                        }
+                    }, 250);
+                }
             }
+            
         }, 20);
     }
 
-    private refrshVideos(){
+    private refreshVideos(){
         if (this.platform.is('ios') && this.platform.is('cordova')) {
             cordova.plugins.iosrtc.refreshVideos();
         } 

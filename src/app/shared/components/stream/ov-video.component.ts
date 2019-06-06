@@ -16,6 +16,7 @@ export class OpenViduVideoComponent implements AfterViewInit {
     @ViewChild('videoElement') elementRef: ElementRef;
 
     @Input() mutedSound: boolean;
+    @Input() isBackCamera: boolean;
 
     _streamManager: StreamManager;
 
@@ -52,7 +53,7 @@ export class OpenViduVideoComponent implements AfterViewInit {
     public applyIosIonicVideoAttributes() {
         this.elementRef.nativeElement.style.width = '100% !important';
         this.elementRef.nativeElement.style.zIndex = '-1';
-        if (!this._streamManager.remote) {
+        if (!this._streamManager.remote && !this.isBackCamera) {
             // It is a Publisher video. Custom iosrtc plugin mirror video
             this.elementRef.nativeElement.style.transform = 'scaleX(-1)';
         }

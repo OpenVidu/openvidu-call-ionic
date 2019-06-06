@@ -5,23 +5,23 @@ export class UserModel {
     private nickname: string;
     private streamManager: StreamManager;
     private type: 'local' | 'remote';
-    private actualDeviceId: string;
     private avatar: string;
     private audioActive: boolean;
     private videoActive: boolean;
     private audioSource: string;
     private videoSource: string;
+    private isBackCameraActive: boolean;
 
     constructor() {
         this.connectionId = '';
         this.nickname = '';
         this.streamManager = null;
         this.type = 'local';
-        this.actualDeviceId = '';
         this.audioActive = true;
         this.videoActive = true;
         this.audioSource = undefined;
         this.videoSource = undefined;
+        this.isBackCameraActive = false;
     }
 
     /* Getters */
@@ -45,10 +45,6 @@ export class UserModel {
         return !this.isLocal();
     }
 
-    public getActualDeviceId(): string {
-        return this.actualDeviceId;
-    }
-
     public getAvatar(): string {
         return this.avatar;
     }
@@ -69,6 +65,10 @@ export class UserModel {
         return this.videoSource;
     }
 
+    public isBackCamera(): boolean {
+        return this.isBackCameraActive;
+    }
+
     /* Setters */
 
     public setStreamManager(streamManager: StreamManager) {
@@ -83,9 +83,6 @@ export class UserModel {
     }
     public setType(type: 'local' | 'remote') {
         this.type = type;
-    }
-    public setActualDeviceId(deviceId: string) {
-        this.actualDeviceId = deviceId;
     }
 
     public setUserAvatar(avatar: string): void {
@@ -106,5 +103,9 @@ export class UserModel {
 
     public setVideoSource(videoSource: string) {
         this.videoSource = videoSource;
+    }
+
+    public setIsBackCamera(active: boolean) {
+        this.isBackCameraActive = active;
     }
 }
