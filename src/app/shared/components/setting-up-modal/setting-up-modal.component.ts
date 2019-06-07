@@ -29,9 +29,11 @@ export class SettingUpModalComponent implements OnInit {
         this.OV.getDevices().then((devices: any) => {
             this.audioDevices = devices.filter((device) => device.kind === 'audioinput');
             this.videoDevices = devices.filter((device) => device.kind === 'videoinput');
-            this.localUser.setVideoSource(this.videoDevices.filter((device: any) => device.label.includes("Front"))[0].deviceId)
             console.log('Audio devices: ', this.audioDevices);
             console.log('Video devices: ', this.videoDevices);
+            if (this.platform.is('cordova')) {
+                this.localUser.setVideoSource(this.videoDevices.filter((device: any) => device.label.includes('Front'))[0].deviceId);
+            }
         });
     }
 
@@ -89,12 +91,12 @@ export class SettingUpModalComponent implements OnInit {
     private initPublisher(): Promise<any> {
         return new Promise((resolve, reject) => {
             console.log('initialize publisher');
-            let device = this.videoDevices.filter((device) => 
-                 device.deviceId === this.localUser.getVideoSource()
+            const device = this.videoDevices.filter((video) =>
+                video.deviceId === this.localUser.getVideoSource()
             );
-            let isBackCamera = !!device[0] && device[0].label.includes("Back"); 
+            const isBackCamera = !!device[0] && device[0].label.includes('Back');
             this.localUser.setIsBackCamera(isBackCamera);
-            
+
             this.OV.initPublisherAsync(undefined, {
                 audioSource: this.localUser.getAudioSource(),
                 videoSource: this.localUser.getVideoSource(),
@@ -111,7 +113,7 @@ export class SettingUpModalComponent implements OnInit {
     }
 
     private destroyPublisher() {
-        console.log("Destroying publisher...");
+        console.log('Destroying publisher...');
         this.localUser.getStreamManager().stream.disposeWebRtcPeer();
         this.localUser.getStreamManager().stream.disposeMediaStream();
         this.localUser.setStreamManager(null);

@@ -148,7 +148,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
                   // Go back
                     this.router.navigate(['/']);
               }
-        });        
+        });
         return await modal.present().then(() => {
             this.refreshVideos();
         });
@@ -250,7 +250,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             if (this.videoDevices && this.videoDevices.length > 0) {
                 let videoSource: string;
                 // Select the first different device
-                videoSource = this.videoDevices.filter((device) => device.deviceId !== this.localUser.getVideoSource())[0].deviceId
+                videoSource = this.videoDevices.filter((device) => device.deviceId !== this.localUser.getVideoSource())[0].deviceId;
                 this.localUser.setVideoSource(videoSource);
 
                 this.localUser.setIsBackCamera(!this.localUser.isBackCamera());
@@ -558,14 +558,13 @@ export class VideoRoomPage implements OnInit, OnDestroy {
                     }, 250);
                 }
             }
-            
         }, 20);
     }
 
-    private refreshVideos(){
+    private refreshVideos() {
         if (this.platform.is('ios') && this.platform.is('cordova')) {
             cordova.plugins.iosrtc.refreshVideos();
-        } 
+        }
     }
 
     private async openAlertError(message: string) {
