@@ -100,5 +100,5 @@
     <plugin name="cordova-plugin-android-permissions" spec="1.0.0" />
     <plugin name="cordova-plugin-iosrtc" spec="4.0.2" />
     <engine name="android" spec="8.0.0" />
-    <engine name="ios" spec="5.0.0" />
+    <engine name="ios" spec="5.0.1" />
 </widget>
