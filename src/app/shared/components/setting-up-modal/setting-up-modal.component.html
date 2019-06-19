@@ -33,6 +33,11 @@
             <ion-select-option *ngFor="let device of videoDevices" value="{{device.deviceId}}">{{device.label}}</ion-select-option>
         </ion-select>
     </ion-item>
+
+    <ion-item *ngIf="platform.is('cordova') && platform.is('ios') && platform.is('iphone')">
+        <ion-label>Speakerphone</ion-label>
+        <ion-toggle [(ngModel)]="speakerphone"></ion-toggle>
+    </ion-item>
 </ion-content>
 
 <ion-footer [style.height]="'55px'" [style.background]="'white'">

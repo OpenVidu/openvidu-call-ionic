@@ -15,6 +15,7 @@ export class SettingUpModalComponent implements OnInit {
     localUser: UserModel;
     audioDevices: any[] = [];
     videoDevices: any[] = [];
+    speakerphone: boolean = false;
 
     constructor(public modalController: ModalController, public platform: Platform) {}
 
@@ -85,6 +86,9 @@ export class SettingUpModalComponent implements OnInit {
     }
 
     join() {
+        if (this.platform.is('ios') && this.platform.is('cordova') && this.platform.is('iphone') && this.speakerphone) {
+            cordova.plugins.iosrtc.enableSpeakerphone();
+        }
         this.modalController.dismiss({user: this.localUser, videoDevices: this.videoDevices});
     }
 
