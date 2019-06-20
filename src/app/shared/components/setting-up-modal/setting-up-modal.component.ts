@@ -13,6 +13,7 @@ declare var cordova;
 export class SettingUpModalComponent implements OnInit {
     OV: OpenVidu;
     localUser: UserModel;
+    audioDevice: any;
     audioDevices: any[] = [];
     videoDevices: any[] = [];
     speakerphone: boolean = false;
@@ -45,8 +46,9 @@ export class SettingUpModalComponent implements OnInit {
     }
 
     setAudioDevice(event) {
-        console.log('Setting audio device to: ', event.detail.value);
-        const audioSource = event.detail.value === 'None' ? undefined : event.detail.value;
+        console.log('Setting audio device to: ', event.detail.value.label);
+        this.audioDevice = event.detail.value;
+        const audioSource = this.audioDevice.deviceId === 'None' ? undefined : this.audioDevice.deviceId;
         this.localUser.setAudioActive(!!audioSource);
         this.localUser.setAudioSource(audioSource);
         if (!!audioSource) {
@@ -58,8 +60,8 @@ export class SettingUpModalComponent implements OnInit {
     }
 
     setVideoDevice(event) {
-        console.log('Setting video device to: ', event.detail.value);
-        const videoSource = event.detail.value === 'None' ? undefined : event.detail.value;
+        console.log('Setting video device to: ', event.detail.value.label);
+        const videoSource = event.detail.value.deviceId === 'None' ? undefined : event.detail.value.deviceId;
         this.localUser.setVideoActive(!!videoSource);
         this.localUser.setVideoSource(videoSource);
         if (!!videoSource) {
@@ -86,7 +88,7 @@ export class SettingUpModalComponent implements OnInit {
     }
 
     join() {
-        if (this.platform.is('ios') && this.platform.is('cordova') && this.platform.is('iphone') && this.speakerphone) {
+        if (this.platform.is('ios') && this.platform.is('cordova') && this.platform.is('iphone') && this.audioDevice && this.audioDevice.label.includes("Speakerphone")) {
             cordova.plugins.iosrtc.enableSpeakerphone();
         }
         this.modalController.dismiss({user: this.localUser, videoDevices: this.videoDevices});
