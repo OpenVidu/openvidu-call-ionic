@@ -19,7 +19,7 @@
         <ion-label></ion-label>
         <ion-select placeholder="Audio Devices" (ionChange)="setAudioDevice($event)">
             <ion-select-option value="None">Disable</ion-select-option>
-            <ion-select-option *ngFor="let device of audioDevices" value="{{device.deviceId}}">{{device.label}}</ion-select-option>
+            <ion-select-option *ngFor="let device of audioDevices" [value]="device">{{device.label}}</ion-select-option>
         </ion-select>
     </ion-item>
 
@@ -30,7 +30,7 @@
         <ion-label></ion-label>
         <ion-select placeholder="Cam Devices" (ionChange)="setVideoDevice($event)">
             <ion-select-option value="None">Disable</ion-select-option>
-            <ion-select-option *ngFor="let device of videoDevices" value="{{device.deviceId}}">{{device.label}}</ion-select-option>
+            <ion-select-option *ngFor="let device of videoDevices" [value]="device">{{device.label}}</ion-select-option>
         </ion-select>
     </ion-item>
 </ion-content>

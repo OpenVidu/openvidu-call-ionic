@@ -13,3 +13,21 @@
 :root {
     --ion-background-color: transparent;
 }
+
+@media only screen and (min-height: 768px) and (min-width: 768px) {
+    .modal-wrapper.sc-ion-modal-ios, .modal-wrapper.sc-ion-modal-ios{
+        --width: 88%;
+        --height: 85%;
+    }   
+    .alert-wrapper.sc-ion-alert-ios, .alert-wrapper.sc-ion-alert-md{
+        --width: 65%;
+        --max-width: 70%;
+    }
+}
+
+@media (min-width: 320px) and (max-width: 480px) {
+    .alert-wrapper.sc-ion-alert-ios, .alert-wrapper.sc-ion-alert-md{
+        --width: 85%;
+        --max-width: 90%;
+    }
+  }
