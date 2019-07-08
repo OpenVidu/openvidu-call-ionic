@@ -175,6 +175,12 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             animate: true, // Whether you want to animate the transitions
         };
         this.openviduLayout.initLayoutContainer(document.getElementById('layout'), this.openviduLayoutOptions);
+        if (this.platform.is('cordova') && this.platform.is('ios')) {
+            setInterval(() => {
+                this.updateLayout();
+            }, 1000);
+        }
+
         this.joinToSession();
     }
 
