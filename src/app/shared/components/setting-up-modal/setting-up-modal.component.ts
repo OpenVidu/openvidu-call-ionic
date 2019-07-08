@@ -1,7 +1,8 @@
-import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ModalController, Platform } from '@ionic/angular';
 import { OpenVidu, Publisher } from 'openvidu-browser';
 import { UserModel } from '../../models/user-model';
+import { OpenViduService } from '../../services/openvidu.service';
 
 declare var cordova;
 
@@ -16,24 +17,40 @@ export class SettingUpModalComponent implements OnInit {
     audioDevice: any;
     audioDevices: any[] = [];
     videoDevices: any[] = [];
-    speakerphone: boolean = false;
+    speakerphone = false;
 
-    constructor(public modalController: ModalController, public platform: Platform) {}
+    constructor(public modalController: ModalController, public platform: Platform,
+        private openViduSrv: OpenViduService
+        ) {}
 
     ngOnInit() {
-        this.OV = new OpenVidu();
-        this.localUser = new UserModel();
-        this.initDevices();
-        this.initPublisher();
+        this.platform.ready().then(() => {
+            this.OV = new OpenVidu();
+            this.localUser = new UserModel();
+            if (this.platform.is('cordova') && this.platform.is('android')) {
+                this.openViduSrv.checkAndroidPermissions().then(() => {
+                    this.initPublisher().then(() => this.initDevices()).catch((error) => console.log(error));
+                }).catch((err) => {
+                    console.log(err);
+                    this.dismiss();
+                });
+            } else {
+                this.initPublisher().then(() => this.initDevices()).catch((error) => console.log(error));
+
+            }
+        });
     }
 
     initDevices() {
         this.OV.getDevices().then((devices: any) => {
             this.audioDevices = devices.filter((device) => device.kind === 'audioinput');
             this.videoDevices = devices.filter((device) => device.kind === 'videoinput');
-            console.log('Audio devices: ', this.audioDevices);
-            console.log('Video devices: ', this.videoDevices);
             if (this.platform.is('cordova')) {
+                if (this.platform.is('ios')) {
+                    console.log('iOS platform');
+                } else if (this.platform.is('android')) {
+                    console.log('Android platform');
+                }
                 this.localUser.setVideoSource(this.videoDevices.filter((device: any) => device.label.includes('Front'))[0].deviceId);
             }
         });
@@ -100,7 +117,11 @@ export class SettingUpModalComponent implements OnInit {
             const device = this.videoDevices.filter((video) =>
                 video.deviceId === this.localUser.getVideoSource()
             );
-            const isBackCamera = !!device[0] && device[0].label.includes('Back');
+
+            let isBackCamera = false;
+            if (this.platform.is('cordova')) {
+                isBackCamera = !!device[0] && device[0].label.includes('Back');
+            }
             this.localUser.setIsBackCamera(isBackCamera);
 
             this.OV.initPublisherAsync(undefined, {
@@ -120,8 +141,10 @@ export class SettingUpModalComponent implements OnInit {
 
     private destroyPublisher() {
         console.log('Destroying publisher...');
-        this.localUser.getStreamManager().stream.disposeWebRtcPeer();
-        this.localUser.getStreamManager().stream.disposeMediaStream();
-        this.localUser.setStreamManager(null);
+        if (this.localUser.getStreamManager() && this.localUser.getStreamManager().stream) {
+            this.localUser.getStreamManager().stream.disposeWebRtcPeer();
+            this.localUser.getStreamManager().stream.disposeMediaStream();
+            this.localUser.setStreamManager(null);
+        }
     }
 }
