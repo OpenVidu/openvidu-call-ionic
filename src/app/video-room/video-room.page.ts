@@ -440,24 +440,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
                 { clientData: this.myUserName },
             )
             .then(() => {
-                if (this.platform.is('cordova')) {
-                    if (this.platform.is('android')) {
-                        console.log('Android platform');
-                        this.checkAndroidPermissions()
-                        .then(() => {
-                            this.connectWebCam();
-                        })
-                        .catch((err) => {
-                            console.error(err);
-                        });
-
-                    } else if (this.platform.is('ios')) {
-                        console.log('iOS platform');
-                        this.connectWebCam();
-                    }
-                } else {
-                    this.connectWebCam();
-                }
+                this.connectWebCam();
             })
             .catch((error) => {
                 console.error('There was an error connecting to the session:', error.code, error.message);
@@ -465,74 +448,13 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             });
     }
 
-    private checkAndroidPermissions(): Promise<any> {
-        console.log('Requesting Android Permissions');
-        return new Promise((resolve, reject) => {
-            this.platform.ready().then(() => {
-                this.androidPermissions
-                    .requestPermissions(this.ANDROID_PERMISSIONS)
-                    .then(() => {
-                        this.androidPermissions
-                            .checkPermission(this.androidPermissions.PERMISSION.CAMERA)
-                            .then((camera) => {
-                                this.androidPermissions
-                                    .checkPermission(this.androidPermissions.PERMISSION.RECORD_AUDIO)
-                                    .then((audio) => {
-                                        this.androidPermissions
-                                            .checkPermission(this.androidPermissions.PERMISSION.MODIFY_AUDIO_SETTINGS)
-                                            .then((modifyAudio) => {
-                                                if (camera.hasPermission && audio.hasPermission && modifyAudio.hasPermission) {
-                                                    resolve();
-                                                } else {
-                                                    reject(
-                                                        new Error(
-                                                            'Permissions denied: ' +
-                                                                '\n' +
-                                                                ' CAMERA = ' +
-                                                                camera.hasPermission +
-                                                                '\n' +
-                                                                ' AUDIO = ' +
-                                                                audio.hasPermission +
-                                                                '\n' +
-                                                                ' AUDIO_SETTINGS = ' +
-                                                                modifyAudio.hasPermission,
-                                                        ),
-                                                    );
-                                                }
-                                            })
-                                            .catch((err) => {
-                                                console.error(
-                                                    'Checking permission ' +
-                                                        this.androidPermissions.PERMISSION.MODIFY_AUDIO_SETTINGS +
-                                                        ' failed',
-                                                );
-                                                reject(err);
-                                            });
-                                    })
-                                    .catch((err) => {
-                                        console.error(
-                                            'Checking permission ' + this.androidPermissions.PERMISSION.RECORD_AUDIO + ' failed',
-                                        );
-                                        reject(err);
-                                    });
-                            })
-                            .catch((err) => {
-                                console.error('Checking permission ' + this.androidPermissions.PERMISSION.CAMERA + ' failed');
-                                reject(err);
-                            });
-                    })
-                    .catch((err) => console.error('Error requesting permissions: ', err));
-            });
-        });
-    }
-
     private connectWebCam(): void {
         this.localUser.setNickname(this.myUserName);
         this.localUser.setConnectionId(this.session.connection.connectionId);
         this.session.publish(<Publisher>this.localUser.getStreamManager());
         this.localUser.getStreamManager().on('streamPlaying', () => {
-            this.updateLayout();
             (<HTMLElement>this.localUser.getStreamManager().videos[0].video).parentElement.classList.remove('custom-class');
+            this.updateLayout();
         });
         this.openViduSrv.getRandomAvatar().then((avatar) => {
             this.localUser.setUserAvatar(avatar);
