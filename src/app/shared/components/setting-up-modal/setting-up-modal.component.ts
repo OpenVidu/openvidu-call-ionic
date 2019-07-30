@@ -29,6 +29,7 @@ export class SettingUpModalComponent implements OnInit {
             this.localUser = new UserModel();
             if (this.platform.is('cordova') && this.platform.is('android')) {
                 this.openViduSrv.checkAndroidPermissions().then(() => {
+                    navigator.mediaDevices.ondevicechange = (ev) => { this.initDevices(); };
                     this.initPublisher().then(() => this.initDevices()).catch((error) => console.log(error));
                 }).catch((err) => {
                     console.log(err);
@@ -36,7 +37,6 @@ export class SettingUpModalComponent implements OnInit {
                 });
             } else {
                 this.initPublisher().then(() => this.initDevices()).catch((error) => console.log(error));
-
             }
         });
     }
