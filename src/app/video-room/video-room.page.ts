@@ -96,7 +96,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     videoDevices: any[] = [];
 
     OV: OpenVidu;
-    @ViewChild('mainStream') mainStream: ElementRef;
+    @ViewChild('mainStream', {static: false}) mainStream: ElementRef;
     session: Session;
     openviduLayout: OpenViduLayout;
     openviduLayoutOptions: OpenViduLayoutOptions;
@@ -107,7 +107,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     resizeTimeout;
 
     @ViewChildren('streamComponentRemotes') streamComponentRemotes: QueryList<StreamComponent>;
-    @ViewChild('streamComponentLocal') streamComponentLocal: StreamComponent;
+    @ViewChild('streamComponentLocal', {static: false}) streamComponentLocal: StreamComponent;
 
     constructor(
         public platform: Platform,

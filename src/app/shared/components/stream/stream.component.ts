@@ -11,7 +11,7 @@ export class StreamComponent implements OnInit {
     @Input()
     user: UserModel;
 
-    @ViewChild('videoComponent') videoComponent: OpenViduVideoComponent;
+    @ViewChild('videoComponent', {static: false}) videoComponent: OpenViduVideoComponent;
 
     mutedSound: boolean;
 
