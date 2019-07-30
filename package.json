@@ -28,7 +28,7 @@
     "@ionic/angular": "4.7.1",
     "cordova-android": "8.0.0",
     "cordova-ios": "5.0.1",
-    "cordova-plugin-android-enumeratedevices": "file:../cordova-plugin-android-enumeratedevices",
+    "cordova-plugin-android-enumeratedevices": "git+https://github.com/OpenVidu/cordova-plugin-android-enumeratedevices.git",
     "cordova-plugin-android-permissions": "1.0.0",
     "cordova-plugin-ionic-keyboard": "2.1.3",
     "cordova-plugin-ionic-webview": "4.1.1",
