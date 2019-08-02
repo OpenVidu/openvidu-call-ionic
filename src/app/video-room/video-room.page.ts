@@ -254,29 +254,30 @@ export class VideoRoomPage implements OnInit, OnDestroy {
     toggleCamera() {
         if (this.platform.is('cordova')) {
             if (this.videoDevices && this.videoDevices.length > 0) {
-                let videoSource: string;
+                let videoSource: any;
                 // Select the first different device
-                videoSource = this.videoDevices.filter((device) => device.deviceId !== this.localUser.getVideoSource())[0].deviceId;
-                this.localUser.setVideoSource(videoSource);
+                videoSource = this.videoDevices.filter((device) => device.deviceId !== this.localUser.getVideoSource())[0];
+                console.log('SETTING DEVICE: ', videoSource);
+                this.localUser.setVideoSource(videoSource.deviceId);
 
                 this.localUser.setIsBackCamera(!this.localUser.isBackCamera());
+                this.session.unpublish(<Publisher>this.localUser.getStreamManager());
 
-                console.log('SETTING DEVICE ID: ', videoSource);
-                this.OV.initPublisherAsync(undefined, {
+                const publisher = this.OV.initPublisher(undefined, {
                     videoSource: this.localUser.getVideoSource(),
                     publishAudio: this.localUser.isVideoActive(),
                     publishVideo: this.localUser.isVideoActive(),
-                    mirror: this.localUser.isBackCamera()
-                }).then((publisher) => {
-                    this.session.unpublish(<Publisher>this.localUser.getStreamManager());
-                    this.cameraBtnColor = this.cameraBtnColor === 'light' ? 'primary' : 'light';
-                    this.localUser.setStreamManager(null);
-                    setTimeout(() => {
-                        this.localUser.setStreamManager(publisher);
-                        this.updateLayout();
-                        this.session.publish(publisher);
-                    });
-                }).catch((error) => console.error(error));
+                    mirror: !this.localUser.isBackCamera()
+                });
+
+                this.cameraBtnColor = this.cameraBtnColor === 'light' ? 'primary' : 'light';
+                this.localUser.setStreamManager(null);
+                setTimeout(() => {
+                    this.localUser.setStreamManager(publisher);
+                    this.updateLayout();
+                    this.session.publish(publisher);
+                });
+
             }
         }
     }
