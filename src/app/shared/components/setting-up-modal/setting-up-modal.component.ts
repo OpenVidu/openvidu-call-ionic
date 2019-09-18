@@ -48,6 +48,9 @@ export class SettingUpModalComponent implements OnInit {
             if (this.platform.is('cordova')) {
                 if (this.platform.is('ios')) {
                     console.log('iOS platform');
+                    setTimeout(() => {
+                        this.refreshVideos();
+                    },1100);
                 } else if (this.platform.is('android')) {
                     console.log('Android platform');
                 }
