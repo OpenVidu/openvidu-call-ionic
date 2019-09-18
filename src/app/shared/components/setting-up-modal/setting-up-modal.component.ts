@@ -105,9 +105,6 @@ export class SettingUpModalComponent implements OnInit {
     }
 
     join() {
-        if (this.platform.is('ios') && this.platform.is('cordova') && this.platform.is('iphone') && this.audioDevice && this.audioDevice.label.includes("Speakerphone")) {
-            cordova.plugins.iosrtc.enableSpeakerphone();
-        }
         this.modalController.dismiss({user: this.localUser, videoDevices: this.videoDevices});
     }
 
