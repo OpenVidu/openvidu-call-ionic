@@ -9,7 +9,7 @@
     </ion-toolbar>
 </ion-header>
 
-<ion-content padding id="content" [scrollEvents]="true" (ionScroll)="refreshVideos()">
+<ion-content class="ion-padding" id="content" [scrollEvents]="true" (ionScroll)="refreshVideos()">
   <div  id="ovVideo" *ngIf="localUser && localUser.getStreamManager()"> 
       <ov-video [streamManager]="localUser.getStreamManager()" [isBackCamera]="localUser.isBackCamera()"></ov-video>
     </div>

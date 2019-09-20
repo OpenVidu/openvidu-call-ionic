@@ -10,7 +10,7 @@
 </ion-header>
 
 
-<ion-content padding id="chat-content">
+<ion-content class="ion-padding" id="chat-content">
 
     <div id="message-wrap" class="message-wrap">
         <div *ngFor="let data of messageList; let i = index" class="message" [class.right]="data.connectionId === user.getConnectionId()"
