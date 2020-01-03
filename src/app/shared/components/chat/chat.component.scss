@@ -37,6 +37,14 @@ ion-footer {
     width: 60px;
     height: 60px;
     top: 15px;
+    text-align: center;
+    background-color: #f0f0f0;
+  }
+
+  .user-img img {
+    max-width: 80%;
+    position: relative;
+    top: 13%;
   }
   
   .msg-detail {

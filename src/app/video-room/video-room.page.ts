@@ -373,11 +373,9 @@ export class VideoRoomPage implements OnInit, OnDestroy {
                 newUser.setNickname(nickname);
             }
             newUser.setType('remote');
-            this.openViduSrv.getRandomAvatar().then((avatar) => {
-                newUser.setUserAvatar(avatar);
-                this.remoteUsers.push(newUser);
-                this.sendSignalUserAvatar(this.localUser);
-            });
+            newUser.setUserAvatar(this.openViduSrv.getRandomAvatar());
+            this.remoteUsers.push(newUser);
+            this.sendSignalUserAvatar(this.localUser);
             this.buttonsVisibility = 'out';
             this.chatNotification = 'out';
         });
@@ -463,10 +461,8 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             (<HTMLElement>this.localUser.getStreamManager().videos[0].video).parentElement.classList.remove('custom-class');
             this.updateLayout();
         });
-        this.openViduSrv.getRandomAvatar().then((avatar) => {
-            this.localUser.setUserAvatar(avatar);
-            this.sendSignalUserAvatar(this.localUser);
-        });
+        this.localUser.setUserAvatar(this.openViduSrv.getRandomAvatar());
+        this.sendSignalUserAvatar(this.localUser);
         this.updateLayout();
     }
 
