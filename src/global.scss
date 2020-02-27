@@ -14,16 +14,21 @@
     --ion-background-color: transparent;
 }
 
+.alert-wrapper.sc-ion-alert-md{
+    --background: #ffffff;
+    --width: 50%;
+    --max-width: 60%;
+}
+
 @media only screen and (min-height: 768px) and (min-width: 768px) {
     .modal-wrapper.sc-ion-modal-ios, .modal-wrapper.sc-ion-modal-ios{
         --width: 88%;
         --height: 85%;
         --background: #ffffff;
-    }   
+    }
     .alert-wrapper.sc-ion-alert-ios, .alert-wrapper.sc-ion-alert-md{
         --width: 65%;
         --max-width: 70%;
-        --background: #ffffff;
     }
 }
 
@@ -31,6 +36,5 @@
     .alert-wrapper.sc-ion-alert-ios, .alert-wrapper.sc-ion-alert-md{
         --width: 85%;
         --max-width: 90%;
-        --background: #ffffff;
     }
   }
