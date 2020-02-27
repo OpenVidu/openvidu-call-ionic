@@ -11,7 +11,6 @@ import { OpenViduService } from '../shared/services/openvidu.service';
 import { trigger, keyframes, state, style, transition, animate } from '@angular/animations';
 import { ChatComponent } from '../shared/components/chat/chat.component';
 
-import { AndroidPermissions } from '@ionic-native/android-permissions/ngx';
 import { StreamComponent } from '../shared/components/stream/stream.component';
 import { SettingUpModalComponent } from '../shared/components/setting-up-modal/setting-up-modal.component';
 declare var cordova;
@@ -115,7 +114,6 @@ export class VideoRoomPage implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private openViduSrv: OpenViduService,
         public modalController: ModalController,
-        private androidPermissions: AndroidPermissions,
         public alertController: AlertController,
     ) {}
 
