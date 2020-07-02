@@ -5,7 +5,7 @@
                 <ion-icon slot="icon-only" name="close"></ion-icon>
             </ion-button>
         </ion-buttons>
-        <ion-title>{{user.getStreamManager().stream.session.sessionId}} - CHAT</ion-title>
+        <ion-title>{{user.streamManager.stream.session.sessionId}} - CHAT</ion-title>
     </ion-toolbar>
 </ion-header>
 
@@ -13,8 +13,8 @@
 <ion-content class="ion-padding" id="chat-content">
 
     <div id="message-wrap" class="message-wrap">
-        <div *ngFor="let data of messageList; let i = index" class="message" [class.right]="data.connectionId === user.getConnectionId()"
-            [class.left]=" data.connectionId !== user.getConnectionId()">
+        <div *ngFor="let data of messageList; let i = index" class="message" [class.right]="data.connectionId === user.connectionId"
+            [class.left]=" data.connectionId !== user.connectionId">
             <div class="user-img">
                 <img [src]="data.userAvatar" />
             </div>

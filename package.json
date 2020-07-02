@@ -25,7 +25,7 @@
     "@ionic-native/core": "5.27.0",
     "@ionic-native/splash-screen": "5.27.0",
     "@ionic-native/status-bar": "5.27.0",
-    "@ionic/angular": "5.2.2",
+    "@ionic/angular": "5.2.3",
     "cordova-android": "8.1.0",
     "cordova-android-support-gradle-release": "3.0.1",
     "cordova-ios": "6.1.0",
@@ -39,12 +39,11 @@
     "cordova-plugin-statusbar": "2.4.3",
     "cordova-plugin-whitelist": "1.3.4",
     "core-js": "3.6.5",
-    "jquery": "3.5.0",
+    "jquery": "3.5.1",
     "openvidu-browser": "2.14.0",
     "rxjs": "6.5.5",
-    "tslib": "1.11.1",
-    "xcode": "3.0.0",
-    "zone.js": "0.10.2"
+    "xcode": "3.0.1",
+    "zone.js": "0.10.3"
   },
   "devDependencies": {
     "@angular-devkit/architect": "0.901.3",
@@ -70,6 +69,7 @@
     "karma-jasmine-html-reporter": "1.5.2",
     "protractor": "7.0.0",
     "ts-node": "8.6.2",
+    "tslib": "1.11.1",
     "tslint": "6.1.0",
     "typescript": "3.7.5"
   },

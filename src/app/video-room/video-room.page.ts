@@ -170,7 +170,7 @@ export class VideoRoomPage implements OnInit, OnDestroy {
             bigMaxRatio: 3 / 2, // The narrowest ratio to use for the big elements (default 2x3)
             bigMinRatio: 9 / 16, // The widest ratio to use for the big elements (default 16x9)
             bigFirst: false, // Whether to place the big one in the top left (true) or bottom right
-            animate: true, // Whether you want to animate the transitions
+            animate: false, // Whether you want to animate the transitions
         };
         this.openviduLayout.initLayoutContainer(document.getElementById('layout'), this.openviduLayoutOptions);
         if (this.platform.is('cordova') && this.platform.is('ios')) {
@@ -275,7 +275,6 @@ export class VideoRoomPage implements OnInit, OnDestroy {
                     this.updateLayout();
                     this.session.publish(publisher);
                 });
-
             }
         }
     }

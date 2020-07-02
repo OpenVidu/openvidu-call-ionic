@@ -1,9 +1,7 @@
 import { StreamManager } from 'openvidu-browser';
 
 export class UserModel {
-    private connectionId: string;
     private nickname: string;
-    private streamManager: StreamManager;
     private type: 'local' | 'remote';
     private avatar: string;
     private audioActive: boolean;
@@ -11,7 +9,10 @@ export class UserModel {
     private audioSource: string;
     private videoSource: string;
     private isBackCameraActive: boolean;
-
+    
+    streamManager: StreamManager;
+    connectionId: string;
+    
     constructor() {
         this.connectionId = '';
         this.nickname = '';
