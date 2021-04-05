@@ -78,7 +78,7 @@ export class OpenViduService {
         return 'https://openvidu.io/img/logos/openvidu_globe_bg_transp_cropped.png';
     }
 
-    public checkAndroidPermissions(): Promise<any> {
+    public checkAndroidPermissions(): Promise<void> {
         console.log('Requesting Android Permissions');
         return new Promise((resolve, reject) => {
             this.androidPermissions.requestPermissions(this.ANDROID_PERMISSIONS)
